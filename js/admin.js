@@ -69,6 +69,7 @@
     const $ = function (id) { return p.querySelector('#' + id); };
     const canvas = $('dCanvas');
     let fondoImg = fondoCache, fondoArchivo = null, editId = null, cache = [], pendiente = false;
+    let versAuto = '', turnoBiblia = 0; // versAuto: último versículo puesto solo; si lo editas a mano ya no se toca
 
     function pintar() {
       dibujarDevocional(canvas, fondoImg, { cita: $('dCita').value, versiculo: $('dVers').value, cuerpo: $('dCuerpo').value, color: $('dColor').value });
@@ -78,7 +79,21 @@
       pendiente = true;
       requestAnimationFrame(function () { pendiente = false; pintar(); });
     }
-    ['dCita', 'dVers', 'dCuerpo', 'dColor'].forEach(function (id) { $(id).oninput = programar; });
+    ['dVers', 'dCuerpo', 'dColor'].forEach(function (id) { $(id).oninput = programar; });
+
+    // Al escribir la cita ("Salmos 34 : 1") el versículo se llena solo, siempre que no lo hayas escrito o cambiado tú.
+    async function autocompletarVersiculo() {
+      const turno = ++turnoBiblia;
+      const texto = await BibliaWeb.textoDeCita($('dCita').value);
+      if (turno !== turnoBiblia) return;
+      const actual = $('dVers').value;
+      if (actual !== '' && actual !== versAuto) return;
+      const nuevo = texto || '';
+      if (nuevo === actual) return;
+      $('dVers').value = nuevo; versAuto = nuevo; programar();
+    }
+    $('dCita').onfocus = function () { BibliaWeb.cargar().catch(function () {}); };
+    $('dCita').oninput = function () { programar(); autocompletarVersiculo(); };
 
     function imagenDesdeSrc(src) {
       return new Promise(function (res, rej) { const i = new Image(); i.onload = function () { res(i); }; i.onerror = rej; i.src = src; });
@@ -162,7 +177,7 @@
 
     // ── Edición del vigente ──
     function entrarEnEdicion(d) {
-      editId = d.id;
+      editId = d.id; versAuto = '';
       $('dCita').value = d.cita || '';
       $('dVers').value = d.versiculo || '';
       $('dCuerpo').value = d.cuerpo || '';
@@ -181,7 +196,7 @@
       $('dPub').textContent = 'Publicar devocional';
     }
     $('dCancelar').onclick = function () {
-      salirDeEdicion();
+      salirDeEdicion(); versAuto = '';
       $('dCita').value = ''; $('dVers').value = ''; $('dCuerpo').value = '';
       msg($('dMsg'), ''); pintar();
     };
@@ -193,7 +208,7 @@
         const r = await llamar('listar_devocionales_admin');
         cache = r.devocionales;
         lista.innerHTML = cache.length ? cache.map(function (d, i) {
-          return '<li><img class="mini" src="' + esc(d.imagenUrl) + '" alt="" loading="lazy">' +
+          return '<li><span class="mini-slot" data-i="' + i + '"></span>' +
             '<div class="txt"><b>' + esc(d.cita || '(sin cita)') + '</b>' + (i === 0 ? '<span class="marca-estado">vigente</span>' : '') +
             '<div class="sub">' + esc(d.fecha) + '</div></div>' +
             '<div class="acciones">' +
@@ -201,6 +216,7 @@
             '<button class="btn sec chico" data-b="' + esc(d.id) + '">Descargar</button>' +
             '<button class="btn mal chico" data-d="' + esc(d.id) + '">Borrar</button></div></li>';
         }).join('') : vacio('Aún no hay devocionales.');
+        lista.querySelectorAll('.mini-slot').forEach(function (sl) { cargarMiniatura(sl, urlsMiniatura(cache[sl.dataset.i].imagenUrl)); });
         lista.querySelectorAll('[data-e]').forEach(function (b) {
           b.onclick = function () { entrarEnEdicion(cache.find(function (x) { return String(x.id) === b.dataset.e; })); };
         });
@@ -279,13 +295,15 @@
     async function cargar() {
       try {
         const r = await llamar('listar_eventos_admin');
-        lista.innerHTML = r.eventos.length ? r.eventos.map(function (ev) {
-          return '<li class="' + (ev.activo ? '' : 'oculto') + '"><img class="mini flyer" src="' + esc(ev.imagenUrl) + '" alt="" loading="lazy">' +
+        const eventos = r.eventos;
+        lista.innerHTML = eventos.length ? eventos.map(function (ev, i) {
+          return '<li class="' + (ev.activo ? '' : 'oculto') + '"><span class="mini-slot flyer" data-i="' + i + '"></span>' +
             '<div class="txt"><b>' + esc(ev.etiqueta) + '</b><div class="sub">' + esc(ev.fecha) + (ev.activo ? '' : ' · oculto') + '</div></div>' +
             '<div class="acciones">' +
             '<button class="btn sec chico" data-t="' + esc(ev.id) + '" data-a="' + ev.activo + '">' + (ev.activo ? 'Ocultar' : 'Mostrar') + '</button>' +
             '<button class="btn mal chico" data-d="' + esc(ev.id) + '">Borrar</button></div></li>';
         }).join('') : vacio('Aún no hay eventos.');
+        lista.querySelectorAll('.mini-slot').forEach(function (sl) { cargarMiniatura(sl, urlsMiniatura(eventos[sl.dataset.i].imagenUrl)); });
         lista.querySelectorAll('[data-t]').forEach(function (b) {
           b.onclick = async function () { await llamar('toggle_evento_activo', { id: b.dataset.t, activo: b.dataset.a !== 'true' }); cargar(); };
         });
