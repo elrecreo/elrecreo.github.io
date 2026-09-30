@@ -8,9 +8,11 @@ const DEV_LAYOUT = {
   versiculo: { cy: 0.478, size: 0.051, maxW: 0.86, zona: [0.390, 0.585] },
   cuerpo:    { cy: 0.668, size: 0.051, maxW: 0.92, zona: [0.610, 0.735] },
   interlineado: 1.16,
-  bajar: 0.10   // todo el texto baja esta fracción del alto (0.10 = 10%)
+  bajar: -0.10  // desplazamiento vertical de todo el texto, en fracción del alto (positivo = baja, negativo = sube)
 };
-const DEV_COLOR = '#4D414A'; // café-ciruela, un poco más oscuro que el de referencia
+const DEV_PESO = 700;      // versículo y reflexión (antes 600)
+const DEV_PESO_CITA = 400; // cita en cursiva (antes 300)
+const DEV_COLOR = '#5F535D'; // color por defecto (95, 83, 93); se puede cambiar en el selector del panel
 const DEV_FUENTE = 'Montserrat, "Segoe UI", Arial, sans-serif';
 
 function partirLineas(ctx, texto, anchoMax) {
@@ -37,7 +39,7 @@ function dibujarBloque(ctx, W, H, texto, cfg) {
   const minimo = tam * 0.6;
   let lineas, alto;
   for (;;) {
-    ctx.font = '600 ' + tam + 'px ' + DEV_FUENTE;
+    ctx.font = DEV_PESO + ' ' + tam + 'px ' + DEV_FUENTE;
     lineas = partirLineas(ctx, texto, anchoMax);
     alto = lineas.length * tam * DEV_LAYOUT.interlineado;
     if (alto <= altoZona || tam <= minimo) break;
@@ -54,7 +56,7 @@ function dibujarBloque(ctx, W, H, texto, cfg) {
 
 async function cargarFuentesDevocional() {
   try {
-    await Promise.all([document.fonts.load('600 40px Montserrat'), document.fonts.load('italic 300 40px Montserrat')]);
+    await Promise.all([document.fonts.load(DEV_PESO + ' 40px Montserrat'), document.fonts.load('italic ' + DEV_PESO_CITA + ' 40px Montserrat')]);
   } catch (e) { /* si no cargan, se usa la de respaldo */ }
 }
 
@@ -78,7 +80,7 @@ function dibujarDevocional(canvas, fondo, datos) {
   // Cita (ej. "Salmos 34 : 1") — cursiva ligera
   const c = DEV_LAYOUT.cita;
   if (datos.cita) {
-    ctx.font = 'italic 300 ' + (c.size * W) + 'px ' + DEV_FUENTE;
+    ctx.font = 'italic ' + DEV_PESO_CITA + ' ' + (c.size * W) + 'px ' + DEV_FUENTE;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(datos.cita, W / 2, c.cy * H);
   }

@@ -70,7 +70,7 @@
       '<label>Cita</label><input type="text" id="dCita" placeholder="Salmos 34 : 1">' +
       '<label>Versículo</label><textarea id="dVers" placeholder="Bendeciré a Jehová en todo tiempo; Su alabanza estará de continuo en mi boca"></textarea>' +
       '<label>Cuerpo (reflexión)</label><textarea id="dCuerpo" placeholder="Que tu agradecimiento y alabanza a Dios, no estén sujetas a una buena respuesta."></textarea>' +
-      '<div class="fila" style="margin-top:12px"><label style="margin:0">Color del texto</label><input type="color" id="dColor" value="#1E2B6B"></div>' +
+      '<div class="fila" style="margin-top:12px"><label style="margin:0">Color del texto</label><input type="color" id="dColor" value="#5F535D"></div>' +
       '<div class="fila" style="margin-top:14px"><button class="btn" id="dPub">Publicar devocional</button></div>' +
       '<div class="estado" id="dMsg"></div></div>' +
       '<div class="tarjeta"><h3>Fondo del año</h3>' +
