@@ -26,3 +26,36 @@ function esc(t) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
   });
 }
+
+/** "Salmos 34 : 1" -> "salmos-34-1" (para nombres de archivo). */
+function nombreArchivo(texto, respaldo) {
+  const s = String(texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return s || respaldo || 'imagen';
+}
+
+function descargarBlob(blob, nombre) {
+  const a = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  a.href = url; a.download = nombre;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+}
+
+/** Descarga una imagen ya publicada tal cual está en Drive. Si el navegador no deja leerla, la abre en otra pestaña. */
+async function descargarDesdeUrl(url, nombre) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('http ' + res.status);
+    const blob = await res.blob();
+    descargarBlob(blob, nombre + (/png/.test(blob.type) ? '.png' : '.jpg'));
+  } catch (e) {
+    window.open(url, '_blank', 'noopener');
+  }
+}
+
+/** Link de YouTube -> id de 11 caracteres ('' si no es válido). */
+function idYoutube(url) {
+  const m = String(url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/))([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : '';
+}

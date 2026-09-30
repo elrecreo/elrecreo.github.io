@@ -12,8 +12,13 @@ const DEV_LAYOUT = {
 // >>> AJUSTE MANUAL <<<
 // Desplazamiento vertical de TODO el texto (cita + versículo + reflexión), en fracción del alto de la imagen.
 // Positivo = baja, negativo = sube, 0 = posición original del layout. Ej: 0.01 ≈ 1% del alto.
-// Antes estaba en -0.10; ahora -0.07 (más abajo).
 const DEV_DESPLAZAMIENTO_Y = -0.065;
+
+// >>> AJUSTE MANUAL <<<
+// Recorte por ABAJO al descargar la imagen desde el editor, en fracción del alto (0.05 = 5%).
+// Solo afecta a la descarga; lo que se publica en Drive y lo que se descarga desde la lista va completo.
+const DEV_RECORTE_ABAJO_DESCARGA = 0.05;
+
 const DEV_PESO = 700;      // versículo y reflexión (antes 600)
 const DEV_PESO_CITA = 400; // cita en cursiva (antes 300)
 const DEV_COLOR = '#5F535D'; // color por defecto (95, 83, 93); se puede cambiar en el selector del panel
@@ -93,4 +98,14 @@ function dibujarDevocional(canvas, fondo, datos) {
   if (v && !/^[“"«]/.test(v)) v = '“' + v + '”';
   dibujarBloque(ctx, W, H, v, DEV_LAYOUT.versiculo);
   dibujarBloque(ctx, W, H, (datos.cuerpo || '').trim(), DEV_LAYOUT.cuerpo);
+}
+
+/** Copia del canvas sin la franja inferior sobrante (DEV_RECORTE_ABAJO_DESCARGA). */
+function canvasParaDescarga(canvas) {
+  const w = canvas.width;
+  const h = Math.round(canvas.height * (1 - DEV_RECORTE_ABAJO_DESCARGA));
+  const out = document.createElement('canvas');
+  out.width = w; out.height = h;
+  out.getContext('2d').drawImage(canvas, 0, 0, w, h, 0, 0, w, h);
+  return out;
 }
