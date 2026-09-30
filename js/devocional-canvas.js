@@ -13,7 +13,7 @@ const DEV_LAYOUT = {
 // Desplazamiento vertical de TODO el texto (cita + versículo + reflexión), en fracción del alto de la imagen.
 // Positivo = baja, negativo = sube, 0 = posición original del layout. Ej: 0.01 ≈ 1% del alto.
 // Antes estaba en -0.10; ahora -0.07 (más abajo).
-const DEV_DESPLAZAMIENTO_Y = -0.07;
+const DEV_DESPLAZAMIENTO_Y = -0.01;
 const DEV_PESO = 700;      // versículo y reflexión (antes 600)
 const DEV_PESO_CITA = 400; // cita en cursiva (antes 300)
 const DEV_COLOR = '#5F535D'; // color por defecto (95, 83, 93); se puede cambiar en el selector del panel
