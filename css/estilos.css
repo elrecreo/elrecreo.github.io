@@ -117,3 +117,17 @@ details.fondo[open] summary { margin-bottom: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 .editando[hidden] { display: none; }
+
+/* ── Política de privacidad (#/privacidad) ── */
+#privacidad[hidden] { display: none; }
+.priv { max-width: 720px; margin: 0 auto; padding: 36px 20px 80px; }
+.priv-cab { text-align: center; margin-bottom: 22px; padding-bottom: 22px; border-bottom: 1px solid var(--linea); }
+.priv-cab img { display: block; margin: 0 auto 12px; width: 72px; height: 72px; }
+.priv-cab h1 { margin: 0 0 4px; font-size: 24px; font-weight: 700; color: var(--marino); line-height: 1.25; }
+.priv-cab p { margin: 0; font-size: 15px; font-style: italic; color: var(--gris); }
+.priv-intro { color: var(--gris); }
+.priv section { margin-top: 26px; }
+.priv h2 { margin: 0 0 6px; font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--azul-osc); }
+.priv section p { margin: 0; }
+.priv a { color: var(--azul-osc); font-weight: 600; overflow-wrap: anywhere; }
+.priv-fecha { margin-top: 36px; text-align: center; font-size: 13px; color: var(--gris); }
