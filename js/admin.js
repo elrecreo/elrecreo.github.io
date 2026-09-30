@@ -58,7 +58,7 @@
       '<div class="fila" style="margin-top:16px"><label for="dColor">Color del texto</label><input type="color" id="dColor" value="#5F535D"></div>' +
       '</div>' +
       '<div class="dev-vista"><canvas class="vista" id="dCanvas"></canvas></div>' +
-      '<div class="dev-acciones"><div class="fila"><button class="btn" id="dPub">Publicar devocional</button><button class="btn sec" id="dDesc">Descargar imagen</button></div>' +
+      '<div class="dev-acciones"><div class="fila"><button class="btn" id="dPub">Publicar devocional</button><button class="btn sec" id="dShare">Compartir imagen</button></div>' +
       '<div class="estado" id="dMsg" role="status"></div></div>' +
       '</div></section>' +
       '<section class="seccion"><h2>Publicados</h2><ul class="items" id="dLista"><li class="vacio">Cargando…</li></ul></section>' +
@@ -69,6 +69,7 @@
     const $ = function (id) { return p.querySelector('#' + id); };
     const canvas = $('dCanvas');
     let fondoImg = fondoCache, fondoArchivo = null, editId = null, cache = [], pendiente = false;
+    const listos = {}; // imágenes publicadas ya recortadas y listas para compartir, por id
     let versAuto = '', turnoBiblia = 0; // versAuto: último versículo puesto solo; si lo editas a mano ya no se toca
 
     function pintar() {
@@ -131,21 +132,25 @@
       } catch (e) { msg($('fMsg'), e.message, 'mal'); }
     };
 
-    // ── Validación común a publicar y descargar ──
+    // ── Validación común a publicar y compartir ──
     function listoParaGenerar() {
       if (!fondoImg) { $('fDetalle').open = true; msg($('dMsg'), 'Falta el fondo del año.', 'mal'); return false; }
       if (!$('dVers').value.trim() && !$('dCuerpo').value.trim()) { msg($('dMsg'), 'Escribe el versículo o la reflexión.', 'mal'); return false; }
       return true;
     }
 
-    // ── Descargar (con recorte inferior) ──
-    $('dDesc').onclick = function () {
+    // ── Compartir (JPG con recorte inferior) ──
+    $('dShare').onclick = function () {
       if (!listoParaGenerar()) return;
       pintar();
-      canvasParaDescarga(canvas).toBlob(function (blob) {
+      canvasParaCompartir(canvas).toBlob(async function (blob) {
         if (!blob) { msg($('dMsg'), 'No se pudo generar la imagen.', 'mal'); return; }
-        descargarBlob(blob, 'devocional-' + nombreArchivo($('dCita').value, 'imagen') + '.jpg');
-        msg($('dMsg'), 'Imagen descargada', 'ok');
+        try {
+          const r = await compartirImagen(blob, 'devocional-' + nombreArchivo($('dCita').value, 'imagen') + '.jpg');
+          if (r === 'compartido') msg($('dMsg'), 'Imagen compartida', 'ok');
+          else if (r === 'descargado') msg($('dMsg'), 'Este navegador no puede compartir archivos: se descargó la imagen.', 'ok');
+          else msg($('dMsg'), '');
+        } catch (e) { msg($('dMsg'), 'No se pudo abrir el menú de compartir. Intenta de nuevo.', 'mal'); }
       }, 'image/jpeg', 0.95);
     };
 
@@ -213,7 +218,7 @@
             '<div class="sub">' + esc(d.fecha) + '</div></div>' +
             '<div class="acciones">' +
             (i === 0 ? '<button class="btn sec chico icono" data-e="' + esc(d.id) + '" title="Editar" aria-label="Editar">' + ICONO_LAPIZ + '</button>' : '') +
-            '<button class="btn sec chico" data-b="' + esc(d.id) + '">Descargar</button>' +
+            '<button class="btn sec chico" data-b="' + esc(d.id) + '">Compartir</button>' +
             '<button class="btn mal chico" data-d="' + esc(d.id) + '">Borrar</button></div></li>';
         }).join('') : vacio('Aún no hay devocionales.');
         lista.querySelectorAll('.mini-slot').forEach(function (sl) { cargarMiniatura(sl, urlsMiniatura(cache[sl.dataset.i].imagenUrl)); });
@@ -221,9 +226,24 @@
           b.onclick = function () { entrarEnEdicion(cache.find(function (x) { return String(x.id) === b.dataset.e; })); };
         });
         lista.querySelectorAll('[data-b]').forEach(function (b) {
-          b.onclick = function () {
+          b.onclick = async function () {
             const d = cache.find(function (x) { return String(x.id) === b.dataset.b; });
-            descargarDesdeUrl(d.imagenUrl, 'devocional-' + nombreArchivo(d.cita || d.fecha, 'imagen'));
+            const nombre = 'devocional-' + nombreArchivo(d.cita || d.fecha, 'imagen') + '.jpg';
+            const etiqueta = b.textContent;
+            b.disabled = true;
+            try {
+              // Si ya se preparó antes (p. ej. el navegador pidió un segundo toque), se reutiliza.
+              let blob = listos[d.id];
+              if (!blob) { b.textContent = 'Preparando…'; blob = await blobPublicadoParaCompartir(await obtenerBlobImagen(d.imagenUrl)); listos[d.id] = blob; }
+              const r = await compartirImagen(blob, nombre);
+              if (r === 'descargado') msg($('dMsg'), 'Este navegador no puede compartir archivos: se descargó la imagen.', 'ok');
+              b.textContent = etiqueta;
+            } catch (e) {
+              // Tras bajar la imagen el navegador puede exigir un nuevo toque para abrir el menú: la imagen ya queda lista.
+              if (e && e.name === 'NotAllowedError' && listos[d.id]) { b.textContent = 'Toca para compartir'; }
+              else { b.textContent = etiqueta; msg($('dMsg'), e.message || 'No se pudo compartir.', 'mal'); }
+            }
+            b.disabled = false;
           };
         });
         lista.querySelectorAll('[data-d]').forEach(function (b) {

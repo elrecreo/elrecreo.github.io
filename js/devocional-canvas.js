@@ -15,9 +15,11 @@ const DEV_LAYOUT = {
 const DEV_DESPLAZAMIENTO_Y = -0.065;
 
 // >>> AJUSTE MANUAL <<<
-// Recorte por ABAJO al descargar la imagen desde el editor, en fracción del alto (0.05 = 5%).
-// Solo afecta a la descarga; lo que se publica en Drive y lo que se descarga desde la lista va completo.
-const DEV_RECORTE_ABAJO_DESCARGA = 0.05;
+// Recorte por ABAJO al COMPARTIR la imagen, en fracción del alto (0.08 = 8%).
+// Solo afecta a lo que se comparte; lo que se publica en Drive queda completo.
+const DEV_RECORTE_ABAJO_COMPARTIR = 0.08;
+// ¿Aplicar ese mismo recorte al compartir un devocional ya publicado (el de la lista)? true = sí, false = se envía completo.
+const DEV_RECORTAR_PUBLICADOS = true;
 
 const DEV_PESO = 700;      // versículo y reflexión (antes 600)
 const DEV_PESO_CITA = 400; // cita en cursiva (antes 300)
@@ -100,12 +102,31 @@ function dibujarDevocional(canvas, fondo, datos) {
   dibujarBloque(ctx, W, H, (datos.cuerpo || '').trim(), DEV_LAYOUT.cuerpo);
 }
 
-/** Copia del canvas sin la franja inferior sobrante (DEV_RECORTE_ABAJO_DESCARGA). */
-function canvasParaDescarga(canvas) {
-  const w = canvas.width;
-  const h = Math.round(canvas.height * (1 - DEV_RECORTE_ABAJO_DESCARGA));
+/** Copia de la imagen sin la franja inferior sobrante (DEV_RECORTE_ABAJO_COMPARTIR). */
+function recortarParaCompartir(fuente, ancho, alto) {
+  const h = Math.round(alto * (1 - DEV_RECORTE_ABAJO_COMPARTIR));
   const out = document.createElement('canvas');
-  out.width = w; out.height = h;
-  out.getContext('2d').drawImage(canvas, 0, 0, w, h, 0, 0, w, h);
+  out.width = ancho; out.height = h;
+  out.getContext('2d').drawImage(fuente, 0, 0, ancho, h, 0, 0, ancho, h);
   return out;
+}
+
+function canvasParaCompartir(canvas) {
+  return recortarParaCompartir(canvas, canvas.width, canvas.height);
+}
+
+/** Devocional ya publicado (Blob bajado de Drive) -> Blob JPG recortado, listo para compartir. */
+function blobPublicadoParaCompartir(blob) {
+  if (!DEV_RECORTAR_PUBLICADOS) return Promise.resolve(blob);
+  return new Promise(function (resolve, reject) {
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = function () {
+      const c = recortarParaCompartir(img, img.naturalWidth, img.naturalHeight);
+      URL.revokeObjectURL(url);
+      c.toBlob(function (b) { b ? resolve(b) : reject(new Error('No se pudo preparar la imagen')); }, 'image/jpeg', 0.95);
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('No se pudo leer la imagen')); };
+    img.src = url;
+  });
 }

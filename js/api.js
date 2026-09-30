@@ -49,8 +49,8 @@ function idDrive(url) {
   return m ? m[1] : '';
 }
 
-/** Descarga una imagen ya publicada, tal cual quedó en Drive. Nunca la abre en una pestaña. */
-async function descargarDesdeUrl(url, nombre) {
+/** Baja una imagen ya publicada (Drive) y devuelve su Blob. Lanza error si el navegador no deja leerla. */
+async function obtenerBlobImagen(url) {
   const id = idDrive(url);
   const candidatas = (id ? ['https://lh3.googleusercontent.com/d/' + id + '=s0'] : []).concat([url]);
   for (let i = 0; i < candidatas.length; i++) {
@@ -58,16 +58,25 @@ async function descargarDesdeUrl(url, nombre) {
       const res = await fetch(candidatas[i], { credentials: 'omit', referrerPolicy: 'no-referrer' });
       if (!res.ok) continue;
       const blob = await res.blob();
-      if (!/^image\//.test(blob.type)) continue;
-      descargarBlob(blob, nombre + (/png/.test(blob.type) ? '.png' : /webp/.test(blob.type) ? '.webp' : '.jpg'));
-      return;
+      if (/^image\//.test(blob.type)) return blob;
     } catch (e) { /* el navegador no deja leerla: se prueba la siguiente vía */ }
   }
-  // Vía directa de Drive: responde como archivo adjunto, así que se descarga sin salir de la página.
-  const a = document.createElement('a');
-  a.href = id ? 'https://drive.google.com/uc?export=download&id=' + id : url;
-  a.rel = 'noopener'; a.download = nombre + '.jpg';
-  document.body.appendChild(a); a.click(); a.remove();
+  throw new Error('No se pudo bajar la imagen para compartirla.');
+}
+
+/**
+ * Abre el menú de compartir del sistema con la imagen como archivo (WhatsApp, Telegram, etc.).
+ * Devuelve 'compartido', 'cancelado' o 'descargado' (si el navegador no sabe compartir archivos, se descarga).
+ * Si el navegador exige un toque más (NotAllowedError), el error sube para que quien llama lo maneje.
+ */
+async function compartirImagen(blob, nombre) {
+  const archivo = new File([blob], nombre, { type: blob.type || 'image/jpeg' });
+  if (navigator.share && navigator.canShare && navigator.canShare({ files: [archivo] })) {
+    try { await navigator.share({ files: [archivo] }); return 'compartido'; }
+    catch (e) { if (e && e.name === 'AbortError') return 'cancelado'; throw e; }
+  }
+  descargarBlob(blob, nombre);
+  return 'descargado';
 }
 
 /** Posibles links de miniatura para una imagen de Drive, de la más liviana a la original. */
