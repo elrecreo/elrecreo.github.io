@@ -33,7 +33,7 @@ button.btn.chico { padding:6px 12px; font-size:12px; }
 .lista li:first-child { border-top:0; }
 .lista .txt { flex:1; min-width:0; font-size:14px; overflow-wrap:anywhere; }
 .lista .sub { font-size:12px; color:#7b869d; }
-.lista img.mini { width:64px; height:96px; object-fit:cover; border-radius:6px; border:1px solid var(--borde); background:#eee; }
+.lista img.mini { width:64px; height:auto; max-height:130px; object-fit:contain; border-radius:6px; border:1px solid var(--borde); background:#eee; }
 .pill { font-size:11px; padding:2px 8px; border-radius:20px; background:#e3f5ea; color:var(--ok); }
 .pill.off { background:#eee; color:#888; }
 

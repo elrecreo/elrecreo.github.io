@@ -7,8 +7,10 @@ const DEV_LAYOUT = {
   cita:      { cy: 0.336, size: 0.058, maxW: 0.80 },
   versiculo: { cy: 0.478, size: 0.051, maxW: 0.86, zona: [0.390, 0.585] },
   cuerpo:    { cy: 0.668, size: 0.051, maxW: 0.92, zona: [0.610, 0.735] },
-  interlineado: 1.16
+  interlineado: 1.16,
+  bajar: 0.10   // todo el texto baja esta fracción del alto (0.10 = 10%)
 };
+const DEV_COLOR = '#4D414A'; // café-ciruela, un poco más oscuro que el de referencia
 const DEV_FUENTE = 'Montserrat, "Segoe UI", Arial, sans-serif';
 
 function partirLineas(ctx, texto, anchoMax) {
@@ -70,7 +72,8 @@ function dibujarDevocional(canvas, fondo, datos) {
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   }
 
-  ctx.fillStyle = datos.color || '#1E2B6B';
+  ctx.fillStyle = datos.color || DEV_COLOR;
+  ctx.translate(0, DEV_LAYOUT.bajar * H); // baja todos los textos por igual
 
   // Cita (ej. "Salmos 34 : 1") — cursiva ligera
   const c = DEV_LAYOUT.cita;
