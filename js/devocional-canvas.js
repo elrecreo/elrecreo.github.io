@@ -7,9 +7,13 @@ const DEV_LAYOUT = {
   cita:      { cy: 0.336, size: 0.058, maxW: 0.80 },
   versiculo: { cy: 0.478, size: 0.051, maxW: 0.86, zona: [0.390, 0.585] },
   cuerpo:    { cy: 0.668, size: 0.051, maxW: 0.92, zona: [0.610, 0.735] },
-  interlineado: 1.16,
-  bajar: -0.10  // desplazamiento vertical de todo el texto, en fracción del alto (positivo = baja, negativo = sube)
+  interlineado: 1.16
 };
+// >>> AJUSTE MANUAL <<<
+// Desplazamiento vertical de TODO el texto (cita + versículo + reflexión), en fracción del alto de la imagen.
+// Positivo = baja, negativo = sube, 0 = posición original del layout. Ej: 0.01 ≈ 1% del alto.
+// Antes estaba en -0.10; ahora -0.07 (más abajo).
+const DEV_DESPLAZAMIENTO_Y = -0.07;
 const DEV_PESO = 700;      // versículo y reflexión (antes 600)
 const DEV_PESO_CITA = 400; // cita en cursiva (antes 300)
 const DEV_COLOR = '#5F535D'; // color por defecto (95, 83, 93); se puede cambiar en el selector del panel
@@ -75,7 +79,7 @@ function dibujarDevocional(canvas, fondo, datos) {
   }
 
   ctx.fillStyle = datos.color || DEV_COLOR;
-  ctx.translate(0, DEV_LAYOUT.bajar * H); // baja todos los textos por igual
+  ctx.translate(0, DEV_DESPLAZAMIENTO_Y * H); // baja todos los textos por igual
 
   // Cita (ej. "Salmos 34 : 1") — cursiva ligera
   const c = DEV_LAYOUT.cita;
