@@ -203,9 +203,9 @@
           atras: false,
           derecha: [
             { icono: 'cerrar', titulo: 'Cancelar selección', fn: limpiarSel },
-            { icono: 'escuchar', titulo: 'Escuchar selección', fn: escucharSel },
-            { icono: 'compartir', titulo: 'Compartir', fn: compartirSel },
-            { icono: 'pin', titulo: 'Fijar versículos', fn: fijarSel }
+            { img: 'escuchar', titulo: 'Escuchar selección', fn: escucharSel },
+            { img: 'compartir', titulo: 'Compartir', fn: compartirSel },
+            { img: 'pin', titulo: 'Fijar versículos', fn: fijarSel }
           ]
         });
         // el título va primero; mover botón cancelar al inicio
@@ -215,7 +215,7 @@
         atras: true, titulo: l.nombre + ' ' + cap, clic: abrirMiniLibros,
         derecha: [
           { id: 'rc-btn-version', texto: B.version(versionId).nombre + ' ▾', fn: abrirVersiones },
-          { icono: RC.tema.actual() === 'oscuro' ? 'sol' : 'luna', titulo: 'Cambiar modo claro/oscuro', fn: function () { RC.tema.alternar(); } },
+          { img: RC.tema.actual() === 'oscuro' ? 'noche' : 'dia', titulo: 'Cambiar modo claro/oscuro', fn: function () { RC.tema.alternar(); } },
           { icono: 'mas', titulo: 'Opciones', fn: abrirOpciones }
         ]
       });
@@ -225,8 +225,8 @@
 
     // ── pintar versículos ──
     function aplicarFuente() {
-      panelV.style.setProperty('--tam', B.tamano(19, paso) + 'px');
-      panelE.style.setProperty('--tam', B.tamano(15, paso) + 'px');
+      panelV.style.setProperty('--tam', B.tamano(20, paso) + 'px');
+      panelE.style.setProperty('--tam', B.tamano(16, paso) + 'px');
     }
     function pintarVersos() {
       panelV.innerHTML = '';

@@ -147,7 +147,7 @@
   };
 
   /** Pone la primera imagen que cargue de verdad. Si ninguna carga, llama a alFallar. */
-  RC.imagen = function (img, urls, alCargar, alFallar) {
+  RC.imagen = function (img, urls, alCargar, alFallar, minAncho) {
     let i = 0;
     img.referrerPolicy = 'no-referrer';
     (function probar() {
@@ -159,7 +159,7 @@
       prueba.onerror = sig;
       prueba.onload = function () {
         if (hecho) return;
-        if (prueba.naturalWidth < 2) { sig(); return; }
+        if (prueba.naturalWidth < (minAncho || 2)) { sig(); return; }
         hecho = true; clearTimeout(t); img.src = prueba.src; if (alCargar) alCargar(img);
       };
       prueba.src = urls[i++];
@@ -219,7 +219,7 @@
     return v;
   };
   RC.hoja = function (titulo, cuerpo) {
-    const caja = h('div', { class: 'rc-hoja', role: 'dialog', 'aria-modal': 'true' }, h('div', { class: 'asa' }), titulo ? h('h2', { text: titulo, style: { marginBottom: '10px', fontSize: '18px', color: 'var(--titulo)' } }) : null, cuerpo);
+    const caja = h('div', { class: 'rc-hoja', role: 'dialog', 'aria-modal': 'true' }, h('div', { class: 'asa' }), titulo ? h('h2', { text: titulo, style: { marginBottom: '10px', fontSize: '18.9px', color: 'var(--titulo)' } }) : null, cuerpo);
     return RC.velo('abajo', caja);
   };
   /** Menú emergente anclado a un botón. items: [{texto, icono, fn, activo}] */
@@ -241,10 +241,10 @@
 
   // ─────────────────────────── estructura (shell) ───────────────────────────
   const TABS = [
-    { id: 'biblia', texto: 'Biblia', icono: 'libro', ruta: '#/biblia' },
-    { id: 'devocional', texto: 'Devocional', icono: 'devocional', ruta: '#/devocional' },
-    { id: 'videos', texto: 'Videos', icono: 'video', ruta: '#/videos' },
-    { id: 'trivia', texto: 'Trivia', icono: 'trivia', ruta: '#/trivia' }
+    { id: 'biblia', texto: 'Biblia', on: 'biblia', off: 'biblia_off', ruta: '#/biblia' },
+    { id: 'devocional', texto: 'Devocional', on: 'devocionales', off: 'devocionales_off', ruta: '#/devocional' },
+    { id: 'videos', texto: 'Videos', on: 'video', off: 'video_off', ruta: '#/videos' },
+    { id: 'trivia', texto: 'Trivia', on: 'juegos', off: 'juegos_off', ruta: '#/trivia' }
   ];
   let barraTop, zonaMain, navEl, root;
   let salidaVista = null;
@@ -255,7 +255,7 @@
     barraTop = h('header', { class: 'rc-top', id: 'rc-top' });
     zonaMain = h('main', { class: 'rc-main', id: 'rc-main' });
     navEl = h('nav', { class: 'rc-nav', 'aria-label': 'Secciones' }, TABS.map(function (t) {
-      return h('button', { dataset: { tab: t.id }, onclick: function () { if (location.hash !== t.ruta) location.hash = t.ruta; else RC.emitir('tab-repetida', t.id); }, html: RC.ico(t.icono) + '<span>' + t.texto + '</span>' });
+      return h('button', { dataset: { tab: t.id }, onclick: function () { if (location.hash !== t.ruta) location.hash = t.ruta; else RC.emitir('tab-repetida', t.id); }, html: '<span class="ind"></span><span class="ico"><img class="off" src="img/nav/' + t.off + '.png" alt="" width="28" height="28"><img class="on" src="img/nav/' + t.on + '.png" alt="" width="28" height="28"></span><span class="txt">' + t.texto + '</span>' });
     }));
     root.appendChild(h('div', { class: 'rc-sync', id: 'rc-sync' }));
     root.appendChild(barraTop);
@@ -283,7 +283,7 @@
         barraTop.appendChild(h('button', { class: 'rc-btn-txt', id: b.id, onclick: function (e) { b.fn(e.currentTarget); }, text: b.texto }));
         return;
       }
-      const btn = h('button', { class: 'rc-btn-ico ' + (b.clase || ''), id: b.id, 'aria-label': b.titulo, title: b.titulo, html: RC.ico(b.icono), onclick: function (e) { b.fn(e.currentTarget); } });
+      const btn = h('button', { class: 'rc-btn-ico ' + (b.clase || ''), id: b.id, 'aria-label': b.titulo, title: b.titulo, html: b.img ? '<img src="img/nav/' + b.img + '.png" alt="" width="30" height="30">' : RC.ico(b.icono), onclick: function (e) { b.fn(e.currentTarget); } });
       if (b.badge != null) btn.appendChild(h('span', { class: 'rc-badge', text: String(b.badge) }));
       barraTop.appendChild(btn);
     });
@@ -302,7 +302,7 @@
     RC.barra({
       marca: true, derecha: [
         { id: 'rc-btn-eventos', icono: 'eventos', titulo: 'Eventos', fn: function () { location.hash = '#/eventos'; }, badge: RC.novedades ? (RC.novedades > 9 ? '9+' : RC.novedades) : null },
-        { id: 'rc-btn-menu', icono: 'menu', titulo: 'Menú', fn: RC.menu }
+        { id: 'rc-btn-menu', img: 'menu_sandwich', titulo: 'Menú', fn: RC.menu }
       ]
     });
   };

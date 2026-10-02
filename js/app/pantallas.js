@@ -89,7 +89,7 @@
       const img = h('img', { alt: '', loading: 'lazy', referrerpolicy: 'no-referrer', src: 'https://i.ytimg.com/vi/' + v.id + '/hqdefault.jpg' });
       const play = h('div', { class: 'play', html: '<span><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>' });
       media.appendChild(img); media.appendChild(play);
-      RC.imagen(img, ['https://i.ytimg.com/vi/' + v.id + '/maxresdefault.jpg', 'https://i.ytimg.com/vi/' + v.id + '/hqdefault.jpg'], null, null);
+      RC.imagen(img, ['https://i.ytimg.com/vi/' + v.id + '/maxresdefault.jpg', 'https://i.ytimg.com/vi/' + v.id + '/hqdefault.jpg'], null, function () { media.classList.add('sin-mini'); }, 300);
       const reproducir = function () {
         detener();
         const f = h('iframe', { src: 'https://www.youtube-nocookie.com/embed/' + v.id + '?autoplay=1&rel=0&playsinline=1', allow: 'autoplay; encrypted-media; picture-in-picture; fullscreen', allowfullscreen: '', title: v.titulo || 'Video', referrerpolicy: 'strict-origin-when-cross-origin' });
@@ -201,10 +201,10 @@
     RC.barra({ atras: true, titulo: 'Peticiones', derecha: [] });
     const pag = ctx.pagina;
     const area = h('textarea', { class: 'rc-input', id: 'pet-texto', placeholder: 'Escribe aquí lo que quieres llevar en oración...', maxlength: '2000', 'aria-label': 'Tu petición' });
-    const err = h('div', { class: 'estado mal', style: { minHeight: '18px', color: 'var(--mal)', fontSize: '13px', margin: '6px 0' }, role: 'alert' });
+    const err = h('div', { class: 'estado mal', style: { minHeight: '18px', color: 'var(--mal)', fontSize: '13.7px', margin: '6px 0' }, role: 'alert' });
     const btn = h('button', { class: 'rc-btn ancho', text: 'Enviar petición' });
     const form = h('div', { class: 'rc-form-card' },
-      h('div', { class: 'em', text: '🙏' }), h('h1', { text: 'Peticiones' }),
+      h('div', { class: 'rc-hero-ico', style: { background: '#FF6B7A' }, html: RC.ico('peticiones') }), h('h1', { text: 'Peticiones' }),
       h('p', { class: 'sub', text: 'Cuéntanos lo que está en tu corazón.\nEstamos aquí para orar contigo.' }),
       h('div', { class: 'campo' }, h('label', { class: 'rc-etiqueta', for: 'pet-texto', text: 'TU PETICIÓN' }), area), err, btn);
     pag.appendChild(form);
@@ -237,7 +237,7 @@
         h('div', { class: 'd' }, h('small', { text: etiqueta }), h('b', { text: valor }), h('span', { text: sub })),
         h('button', { class: 'cp', text: 'Copiar', onclick: async function (e) { const ok = await RC.copiar(valor); RC.aviso(ok ? nombre + ' copiado ✓' : 'No se pudo copiar', ok ? 'ok' : 'mal'); } }));
     };
-    ctx.pagina.appendChild(h('div', { class: 'rc-form-card' }, h('div', { class: 'em', text: '🎁' }), h('h1', { text: 'Donaciones' }),
+    ctx.pagina.appendChild(h('div', { class: 'rc-form-card' }, h('div', { class: 'rc-hero-ico', style: { background: '#34D6B8' }, html: RC.ico('donar') }), h('h1', { text: 'Donaciones' }),
       h('p', { class: 'sub', text: 'Gracias por sembrar en Centro Cristiano el Recreo.' }),
       fila('img/iconos/bre_b.png', 'Llave Bre-B', D.DONACION_LLAVE, 'Transferencia por Bre-B', 'Llave'),
       fila('img/iconos/bancolombia.png', 'Cuenta de ahorros Bancolombia', D.DONACION_CUENTA, 'Transferencia bancaria', 'Número de cuenta')));

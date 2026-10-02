@@ -1,12 +1,13 @@
 /* Service worker de Centro Cristiano El Recreo.
    - Caché: la app abre sin internet y los datos de la Biblia se guardan al leerlos.
    - Notificaciones: clic para abrir la app y revisión periódica de «Nuevo evento» (Chrome/Android con la app instalada). */
-const VERSION = 'rc-v1';
+const VERSION = 'rc-v2';
 const SHELL = 'rc-shell-' + VERSION, DATOS = 'rc-datos-' + VERSION, ESTADO = 'rc-estado';
 const PRECACHE = [
   './', 'index.html', 'config.js', 'css/estilos.css', 'css/app.css', 'manifest.webmanifest',
   'js/api.js', 'js/biblia.js', 'js/devocional-canvas.js', 'js/admin.js', 'js/privacidad.js',
   'js/app/datos.js', 'js/app/nucleo.js', 'js/app/biblia-datos.js', 'js/app/biblia-ui.js', 'js/app/pantallas.js', 'js/app/juego.js', 'js/app/radio.js', 'js/app/notif.js', 'js/app/arranque.js',
+  'img/nav/biblia.png', 'img/nav/biblia_off.png', 'img/nav/devocionales.png', 'img/nav/devocionales_off.png', 'img/nav/video.png', 'img/nav/video_off.png', 'img/nav/juegos.png', 'img/nav/juegos_off.png', 'img/nav/menu_sandwich.png', 'img/nav/compartir.png', 'img/nav/escuchar.png', 'img/nav/pin.png', 'img/nav/dia.png', 'img/nav/noche.png',
   'img/iconos/icon-192.png', 'img/iconos/icon-512.png', 'img/iconos/logo-128.png', 'img/favicon.png', 'img/logo.png',
   'data/preguntas.json', 'data/famosos.json', 'sonidos/pin.mp3'
 ];
