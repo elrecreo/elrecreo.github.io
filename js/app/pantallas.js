@@ -201,7 +201,7 @@
     RC.barra({ atras: true, titulo: 'Peticiones', derecha: [] });
     const pag = ctx.pagina;
     const area = h('textarea', { class: 'rc-input', id: 'pet-texto', placeholder: 'Escribe aquí lo que quieres llevar en oración...', maxlength: '2000', 'aria-label': 'Tu petición' });
-    const err = h('div', { class: 'estado mal', style: { minHeight: '18px', color: 'var(--mal)', fontSize: '13.7px', margin: '6px 0' }, role: 'alert' });
+    const err = h('div', { class: 'estado mal', style: { minHeight: '18px', color: 'var(--mal)', fontSize: '12.3px', margin: '6px 0' }, role: 'alert' });
     const btn = h('button', { class: 'rc-btn ancho', text: 'Enviar petición' });
     const form = h('div', { class: 'rc-form-card' },
       h('div', { class: 'rc-hero-ico', style: { background: '#FF6B7A' }, html: RC.ico('peticiones') }), h('h1', { text: 'Peticiones' }),

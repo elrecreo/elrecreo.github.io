@@ -1,7 +1,7 @@
 /* Service worker de Centro Cristiano El Recreo.
    - Caché: la app abre sin internet y los datos de la Biblia se guardan al leerlos.
    - Notificaciones: clic para abrir la app y revisión periódica de «Nuevo evento» (Chrome/Android con la app instalada). */
-const VERSION = 'rc-v2';
+const VERSION = 'rc-v3';
 const SHELL = 'rc-shell-' + VERSION, DATOS = 'rc-datos-' + VERSION, ESTADO = 'rc-estado';
 const PRECACHE = [
   './', 'index.html', 'config.js', 'css/estilos.css', 'css/app.css', 'manifest.webmanifest',

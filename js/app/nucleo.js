@@ -219,7 +219,7 @@
     return v;
   };
   RC.hoja = function (titulo, cuerpo) {
-    const caja = h('div', { class: 'rc-hoja', role: 'dialog', 'aria-modal': 'true' }, h('div', { class: 'asa' }), titulo ? h('h2', { text: titulo, style: { marginBottom: '10px', fontSize: '18.9px', color: 'var(--titulo)' } }) : null, cuerpo);
+    const caja = h('div', { class: 'rc-hoja', role: 'dialog', 'aria-modal': 'true' }, h('div', { class: 'asa' }), titulo ? h('h2', { text: titulo, style: { marginBottom: '10px', fontSize: '17px', color: 'var(--titulo)' } }) : null, cuerpo);
     return RC.velo('abajo', caja);
   };
   /** Menú emergente anclado a un botón. items: [{texto, icono, fn, activo}] */

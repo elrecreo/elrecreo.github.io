@@ -225,8 +225,8 @@
 
     // ── pintar versículos ──
     function aplicarFuente() {
-      panelV.style.setProperty('--tam', B.tamano(20, paso) + 'px');
-      panelE.style.setProperty('--tam', B.tamano(16, paso) + 'px');
+      panelV.style.setProperty('--tam', B.tamano(18, paso) + 'px');
+      panelE.style.setProperty('--tam', B.tamano(14.5, paso) + 'px');
     }
     function pintarVersos() {
       panelV.innerHTML = '';

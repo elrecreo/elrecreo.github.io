@@ -61,7 +61,7 @@
     function registro() {
       const nombre = h('input', { class: 'rc-input', id: 'tr-nombre', placeholder: 'Nombre', autocomplete: 'given-name', maxlength: '40', 'aria-label': 'Nombre' });
       const apellido = h('input', { class: 'rc-input', id: 'tr-apellido', placeholder: 'Apellido', autocomplete: 'family-name', maxlength: '40', 'aria-label': 'Apellido' });
-      const err = h('div', { style: { color: 'var(--mal)', fontSize: '14.2px', minHeight: '18px' }, role: 'alert' });
+      const err = h('div', { style: { color: 'var(--mal)', fontSize: '12.8px', minHeight: '18px' }, role: 'alert' });
       const btn = h('button', { class: 'rc-tbtn', text: 'COMENZAR' });
       const hacer = async function () {
         const n = nombre.value.trim(), a = apellido.value.trim();
