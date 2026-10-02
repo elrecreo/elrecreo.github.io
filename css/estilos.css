@@ -131,3 +131,7 @@ details.fondo[open] summary { margin-bottom: 12px; }
 .priv section p { margin: 0; }
 .priv a { color: var(--azul-osc); font-weight: 600; overflow-wrap: anywhere; }
 .priv-fecha { margin-top: 36px; text-align: center; font-size: 13px; color: var(--gris); }
+
+.priv-volver { margin: 0 0 14px; font-size: 14px; font-weight: 600; }
+.priv-volver a { color: var(--azul); text-decoration: none; }
+.priv-volver a:hover { text-decoration: underline; }

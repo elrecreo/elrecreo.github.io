@@ -1,7 +1,7 @@
 /**
  * Biblia Reina-Valera 1960 en la web. Lógica portada de BibliaParser.kt de la app:
  * mismo mapa de libros (con abreviaturas y variantes) y misma forma de leer la referencia.
- * Los textos están en data/biblia_rv1960.json y se descargan solo la primera vez que se necesitan.
+ * Los textos están en data/rv1960/<id>.json (uno por libro) y se descargan solo cuando se necesitan.
  */
 const BibliaWeb = (function () {
   // nombre normalizado (sin tildes, minúsculas) -> id de libro (1 = Génesis … 66 = Apocalipsis)
@@ -112,17 +112,19 @@ const BibliaWeb = (function () {
     return { libroId: libroId, capitulo: capitulo, versiculo: versiculo };
   }
 
-  // ── Datos ──
-  let promesa = null;
-  function cargar() {
-    if (!promesa) {
-      promesa = fetch('data/biblia_rv1960.json').then(function (r) {
+  // ── Datos ── (un archivo por libro: data/rv1960/<id>.json = { c: [ [v1, v2…], … ] })
+  const libros = {};
+  function cargarLibro(id) {
+    if (!libros[id]) {
+      libros[id] = fetch('data/rv1960/' + id + '.json').then(function (r) {
         if (!r.ok) throw new Error('No se pudo cargar la Biblia');
         return r.json();
-      }).catch(function (e) { promesa = null; throw e; });
+      }).catch(function (e) { delete libros[id]; throw e; });
     }
-    return promesa;
+    return libros[id];
   }
+  // Compatibilidad: el admin llama cargar() al enfocar la cita; solo precarga Salmos.
+  function cargar() { return cargarLibro(19); }
 
   const MAX_VERSICULOS = 20;
 
@@ -138,8 +140,8 @@ const BibliaWeb = (function () {
     const ref = parsearReferencia(libro + ' ' + m[1] + ' ' + m[2]);
     if (!ref || ref.versiculo == null) return null;
     let datos;
-    try { datos = await cargar(); } catch (e) { return null; }
-    const cap = datos.v[ref.libroId] && datos.v[ref.libroId][ref.capitulo];
+    try { datos = await cargarLibro(ref.libroId); } catch (e) { return null; }
+    const cap = datos.c[ref.capitulo - 1];
     if (!cap || !cap[ref.versiculo - 1]) return null;
     let hasta = m[3] ? parseInt(m[3], 10) : ref.versiculo;
     if (hasta < ref.versiculo) hasta = ref.versiculo;
@@ -147,5 +149,14 @@ const BibliaWeb = (function () {
     return cap.slice(ref.versiculo - 1, hasta).join(' ');
   }
 
-  return { cargar: cargar, textoDeCita: textoDeCita, parsearReferencia: parsearReferencia };
+  /** ¿El texto empieza por un nombre de libro? (esReferencia de BibliaParser.kt) */
+  function esReferencia(texto) {
+    const p = normalizar(texto).split(' ').filter(Boolean);
+    for (let len = 1; len <= Math.min(5, p.length); len++) {
+      if (LIBROS_MAP[p.slice(0, len).join(' ')] != null || LIBROS_MAP[p.slice(0, len).join('')] != null) return true;
+    }
+    return false;
+  }
+
+  return { cargar: cargar, cargarLibro: cargarLibro, textoDeCita: textoDeCita, parsearReferencia: parsearReferencia, esReferencia: esReferencia, normalizar: normalizar };
 })();

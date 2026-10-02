@@ -33,6 +33,7 @@
     if (cont.firstChild) return;
     cont.innerHTML =
       '<article class="priv">' +
+      '<p class="priv-volver"><a href="#/biblia">← Volver a la app</a></p>' +
       '<header class="priv-cab"><img src="img/logo.png" alt="" width="72" height="72">' +
       '<h1>Política de privacidad</h1><p>Centro Cristiano el Recreo</p></header>' +
       '<p class="priv-intro">Esta política explica cómo la app Centro Cristiano el Recreo usa la información necesaria para ofrecer sus funciones de Biblia, devocionales, radio, videos, peticiones de oración y trivia bíblica.</p>' +
