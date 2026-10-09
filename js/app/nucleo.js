@@ -383,9 +383,9 @@
   // ─────────────────────────── menú lateral ───────────────────────────
   RC.menu = function () {
     const nS = RC.notif ? RC.notif.estado() : 'no-soportado';
-    const tile = function (icono, texto, color, ruta, activo) {
+    const tile = function (icono, texto, ruta, activo) {
       return h('button', { class: 'rc-tile' + (activo ? ' on' : ''), onclick: function () { v.cerrar(); location.hash = ruta; } },
-        h('span', { class: 'ic', style: { background: color }, html: RC.ico(icono) }), texto);
+        h('span', { class: 'ic', html: RC.ico(icono) }), texto);
     };
     const fila = function (texto, sub, fn, sw) {
       return h('button', { class: 'rc-fila-menu', onclick: fn }, h('span', null, texto, sub ? h('small', { text: sub }) : null), sw != null ? h('i', { class: 'rc-sw' + (sw ? ' on' : '') }) : null);
@@ -409,10 +409,10 @@
     const drawer = h('aside', { class: 'rc-drawer', role: 'dialog', 'aria-label': 'Menú' },
       h('h2', { text: 'Menú' }),
       h('div', { class: 'rc-tiles' },
-        tile('peticiones', 'Peticiones', '#FF6B7A', '#/peticiones'),
-        tile('escuela', 'Escuela', '#4AA8FF', '#/escuela'),
-        tile('donar', 'Donaciones', '#34D6B8', '#/donaciones'),
-        tile('radio', 'Radio', '#9b7bff', '#/radio', radioOn)),
+        tile('peticiones', 'Peticiones', '#/peticiones'),
+        tile('escuela', 'Escuela', '#/escuela'),
+        tile('donar', 'Donaciones', '#/donaciones'),
+        tile('radio', 'Radio', '#/radio', radioOn)),
       filas);
     const v = RC.velo('der', drawer);
   };

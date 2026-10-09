@@ -75,8 +75,23 @@
     RC.barraRaiz();
     const pag = ctx.pagina, POR_PAGINA = 20;
     const cont = h('div', { class: 'rc-cont', style: { paddingTop: '10px' } });
-    pag.appendChild(cont);
     let lista = RC.leer('videos', []), visibles = POR_PAGINA, jugando = null;
+    let consulta = '', debounce = null, metaCorriendo = false;
+
+    // Buscador (mismo estilo que el de la Biblia, sin micrófono)
+    const input = h('input', { type: 'search', placeholder: 'Buscar videos', 'aria-label': 'Buscar videos', autocomplete: 'off', enterkeyhint: 'search' });
+    const barraBuscar = h('div', { class: 'rc-buscar', style: { position: 'sticky', top: '0' } },
+      h('div', { class: 'caja' }, h('span', { html: RC.ico('buscar'), style: { display: 'contents' } }), input));
+    pag.appendChild(barraBuscar);
+    pag.appendChild(cont);
+
+    /** Videos que coinciden con la búsqueda (título o canal; sin tildes ni mayúsculas; deben estar todas las palabras). */
+    function filtrados() {
+      const f = RC.norm(consulta);
+      if (!f) return lista;
+      const ps = f.split(' ');
+      return lista.filter(function (v) { const t = RC.norm((v.titulo || '') + ' ' + (v.canal || '')); return ps.every(function (p) { return t.indexOf(p) >= 0; }); });
+    }
 
     function metaYoutube(id) {   // título y canal desde oEmbed (si el navegador lo permite)
       return fetch('https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + id))
@@ -106,16 +121,47 @@
     function pintar(animar) {
       detener(); cont.innerHTML = '';
       if (!lista.length) { cont.appendChild(vacio('🎬', 'Por ahora no hay videos para mostrar.')); return; }
-      lista.slice(0, visibles).forEach(function (v, i) {
+      const buscando = !!RC.norm(consulta), items = filtrados();
+      if (!items.length) { cont.appendChild(vacio('🔎', 'No se encontraron videos para «' + consulta.trim() + '».')); return; }
+      // buscando: se muestran todas las coincidencias (sin «Ver más»)
+      (buscando ? items : items.slice(0, visibles)).forEach(function (v, i) {
         const t = tarjeta(v, i); cont.appendChild(t.el);
         if (!v.titulo && !v.meta) {
           v.meta = true;
           metaYoutube(v.id).then(function (m) { v.titulo = m.titulo; v.canal = m.canal; t.tit.textContent = m.titulo; if (m.canal) t.canal.textContent = m.canal; RC.guardar('videos', lista); }).catch(function () { });
         }
       });
-      if (lista.length > visibles) cont.appendChild(h('div', { class: 'rc-vermas' }, h('button', { class: 'rc-btn sec', text: 'Ver más', onclick: function () { visibles += POR_PAGINA; pintar(); } })));
+      if (!buscando && lista.length > visibles) cont.appendChild(h('div', { class: 'rc-vermas' }, h('button', { class: 'rc-btn sec', text: 'Ver más', onclick: function () { visibles += POR_PAGINA; pintar(); } })));
       if (animar) RC.entrada(cont.querySelectorAll('.rc-video'), 0);
     }
+    /** Para poder buscar en todos los videos, baja los títulos que falten (4 a la vez). */
+    async function completarMeta() {
+      if (metaCorriendo) return;
+      const pend = lista.filter(function (v) { return !v.titulo && !v.meta; });
+      if (!pend.length) return;
+      metaCorriendo = true;
+      let i = 0, nuevos = 0;
+      async function obrero() {
+        while (i < pend.length && ctx.vigente()) {
+          const v = pend[i++]; v.meta = true;
+          try { const m = await metaYoutube(v.id); v.titulo = m.titulo; v.canal = m.canal; nuevos++; } catch (e) { }
+        }
+      }
+      await Promise.all([obrero(), obrero(), obrero(), obrero()]);
+      metaCorriendo = false;
+      if (!nuevos || !ctx.vigente()) return;
+      RC.guardar('videos', lista);
+      if (RC.norm(consulta) && !jugando) pintar();   // vuelve a filtrar con los títulos recién llegados
+    }
+    input.addEventListener('focus', completarMeta);
+    input.addEventListener('input', function () {
+      consulta = input.value;
+      if (RC.norm(consulta)) completarMeta();
+      clearTimeout(debounce);
+      debounce = setTimeout(function () { if (!lista.length) return; pintar(); pag.scrollTo({ top: 0 }); }, 180);
+    });
+    input.addEventListener('keydown', function (e) { if (e.key === 'Enter') input.blur(); });
+
     async function sincronizar() {
       const conBarra = !lista.length || RC.sync.debeBarra('videos', RC.sync.BARRA_VIDEOS);
       if (conBarra) { RC.sync.barra(); RC.sync.spinner(true); }
@@ -145,7 +191,7 @@
     }
     if (lista.length) pintar(true); else cont.appendChild(cargando());
     sincronizar();
-    ctx.alSalir(detener);
+    ctx.alSalir(function () { clearTimeout(debounce); detener(); });
   });
 
   // ═══════════════════ EVENTOS ═══════════════════
@@ -204,7 +250,7 @@
     const err = h('div', { class: 'estado mal', style: { minHeight: '18px', color: 'var(--mal)', fontSize: '12.3px', margin: '6px 0' }, role: 'alert' });
     const btn = h('button', { class: 'rc-btn ancho', text: 'Enviar petición' });
     const form = h('div', { class: 'rc-form-card' },
-      h('div', { class: 'rc-hero-ico', style: { background: '#FF6B7A' }, html: RC.ico('peticiones') }), h('h1', { text: 'Peticiones' }),
+      h('div', { class: 'rc-hero-ico', html: RC.ico('peticiones') }), h('h1', { text: 'Peticiones' }),
       h('p', { class: 'sub', text: 'Cuéntanos lo que está en tu corazón.\nEstamos aquí para orar contigo.' }),
       h('div', { class: 'campo' }, h('label', { class: 'rc-etiqueta', for: 'pet-texto', text: 'TU PETICIÓN' }), area), err, btn);
     pag.appendChild(form);
@@ -237,7 +283,7 @@
         h('div', { class: 'd' }, h('small', { text: etiqueta }), h('b', { text: valor }), h('span', { text: sub })),
         h('button', { class: 'cp', text: 'Copiar', onclick: async function (e) { const ok = await RC.copiar(valor); RC.aviso(ok ? nombre + ' copiado ✓' : 'No se pudo copiar', ok ? 'ok' : 'mal'); } }));
     };
-    ctx.pagina.appendChild(h('div', { class: 'rc-form-card' }, h('div', { class: 'rc-hero-ico', style: { background: '#34D6B8' }, html: RC.ico('donar') }), h('h1', { text: 'Donaciones' }),
+    ctx.pagina.appendChild(h('div', { class: 'rc-form-card' }, h('div', { class: 'rc-hero-ico', html: RC.ico('donar') }), h('h1', { text: 'Donaciones' }),
       h('p', { class: 'sub', text: 'Gracias por sembrar en Centro Cristiano el Recreo.' }),
       fila('img/iconos/bre_b.png', 'Llave Bre-B', D.DONACION_LLAVE, 'Transferencia por Bre-B', 'Llave'),
       fila('img/iconos/bancolombia.png', 'Cuenta de ahorros Bancolombia', D.DONACION_CUENTA, 'Transferencia bancaria', 'Número de cuenta')));

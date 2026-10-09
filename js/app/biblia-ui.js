@@ -169,17 +169,57 @@
     RC.barra({ atras: true, titulo: l.nombre, derecha: [] });
     const grid = h('div', { class: 'rc-caps' });
     for (let c = 1; c <= l.caps; c++) {
-      grid.appendChild(h('button', { class: 'rc-capbtn', text: String(c), 'aria-label': 'Capítulo ' + c, onclick: function () { location.hash = '#/biblia/' + l.id + '/' + c; } }));
+      grid.appendChild(h('button', { class: 'rc-capbtn', text: String(c), 'aria-label': 'Capítulo ' + c, onclick: function () { location.hash = '#/biblia/' + l.id + '/' + c + '/versiculos'; } }));
     }
     ctx.pagina.appendChild(h('div', { class: 'rc-cont' }, h('div', { class: 'rc-test', text: l.nombre + ' · ' + l.caps + (l.caps === 1 ? ' capítulo' : ' capítulos') }), grid));
     RC.entrada(grid.children, 0);
     B.libro(l.id).catch(function () { });  // precarga el texto del libro
   });
 
+  // ═══════════════════ Selector de versículo ═══════════════════
+  // Mismo diseño que Capítulos (misma cuadrícula). Deslizar cambia de CAPÍTULO (izquierda = siguiente, derecha = anterior).
+  RC.ruta(/^biblia\/(\d+)\/(\d+)\/versiculos$/, { profundidad: 2, tab: 'biblia', padre: null }, async function (ctx, idS, capS) {
+    const libroId = parseInt(idS, 10), cap = parseInt(capS, 10), l = RC.libro(libroId);
+    if (!l || cap < 1 || cap > l.caps) { location.replace('#/biblia'); return; }
+    RC.barra({ atras: true, titulo: 'Versículo · ' + l.abrev + ' ' + cap, derecha: [] });
+    const pag = ctx.pagina;
+    const grid = h('div', { class: 'rc-caps' });
+    const rotulo = h('div', { class: 'rc-test', text: l.nombre + ' ' + cap });
+    pag.appendChild(h('div', { class: 'rc-cont' }, rotulo, grid));
+
+    function ir(d) {
+      const c = cap + d;
+      if (c < 1 || c > l.caps) return;   // no pasa de un libro a otro (igual que Capítulos en la app)
+      RC.reemplazar('#/biblia/' + libroId + '/' + c + '/versiculos', d > 0 ? 'adelante' : 'atras');
+    }
+    // gesto de deslizar (mismos umbrales que la lectura)
+    let tx0 = 0, ty0 = 0, tt0 = 0;
+    pag.addEventListener('touchstart', function (e) { if (e.touches.length !== 1) return; tx0 = e.touches[0].clientX; ty0 = e.touches[0].clientY; tt0 = Date.now(); }, { passive: true });
+    pag.addEventListener('touchend', function (e) {
+      if (!e.changedTouches.length) return;
+      const dx = e.changedTouches[0].clientX - tx0, dy = Math.abs(e.changedTouches[0].clientY - ty0), dt = Date.now() - tt0;
+      if (Math.abs(dx) > 70 && dy < 40 && dt < 600) ir(dx < 0 ? 1 : -1);
+    }, { passive: true });
+    function teclas(e) { if (e.key === 'ArrowRight') ir(1); else if (e.key === 'ArrowLeft') ir(-1); }
+    document.addEventListener('keydown', teclas);
+    ctx.alSalir(function () { document.removeEventListener('keydown', teclas); });
+
+    let total = 0;
+    try { total = (await B.capitulo(libroId, cap, 'RV1960')).length; }
+    catch (e) { if (ctx.vigente()) rotulo.after(h('div', { class: 'rc-vacio', text: 'No se pudo cargar el capítulo.\nRevisa tu conexión.' })); return; }
+    if (!ctx.vigente()) return;
+    if (!total) { rotulo.after(h('div', { class: 'rc-vacio', text: 'Este capítulo no está disponible.' })); return; }
+    rotulo.textContent = l.nombre + ' ' + cap + ' · ' + total + (total === 1 ? ' versículo' : ' versículos');
+    for (let n = 1; n <= total; n++) {
+      grid.appendChild(h('button', { class: 'rc-capbtn', text: String(n), 'aria-label': 'Versículo ' + n, onclick: function () { location.hash = '#/biblia/' + libroId + '/' + cap + '?v=' + n; } }));
+    }
+    RC.entrada(grid.children, 0);
+  });
+
   // ═══════════════════ Lectura de versículos ═══════════════════
   let estudioActivo = false;
 
-  RC.ruta(/^biblia\/(\d+)\/(\d+)$/, { profundidad: 2, tab: 'biblia', padre: null }, async function (ctx, idS, capS) {
+  RC.ruta(/^biblia\/(\d+)\/(\d+)$/, { profundidad: 3, tab: 'biblia', padre: null }, async function (ctx, idS, capS) {
     const libroId = parseInt(idS, 10), cap = parseInt(capS, 10), l = RC.libro(libroId);
     if (!l || cap < 1 || cap > l.caps) { location.replace('#/biblia'); return; }
     const pag = ctx.pagina;
