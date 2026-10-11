@@ -459,10 +459,14 @@ html[data-rc-tema="oscuro"] .rc-play { color: #0B1226 !important; }
 .rc-acerca { max-width: 640px; margin: 0 auto; padding: 8px 20px 0; text-align: center; }
 .rc-acerca .logo { width: 110px; height: 110px; border-radius: 50%; box-shadow: var(--sombra); margin: 6px auto 10px; }
 .rc-acerca h1 { font-size: 22.7px; font-weight: 800; color: var(--titulo); }
-.rc-acerca h2 { font-size: 12.3px; letter-spacing: .14em; color: var(--prim); margin: 26px 0 8px; font-weight: 800; }
+.rc-acerca h2 { font-size: 12.3px; letter-spacing: .14em; color: var(--prim); margin: 30px 0 10px; font-weight: 800; }
+/* Línea muy fina con sombrita entre secciones */
+.rc-acerca h2::before, .rc-acerca .cita::before { content: ''; display: block; height: 1px; margin: 0 0 22px; border-radius: 1px; background: var(--linea); box-shadow: 0 1px 3px rgba(38, 49, 92, .22), 0 2px 6px rgba(38, 49, 92, .08); }
+html[data-rc-tema="oscuro"] .rc-acerca h2::before, html[data-rc-tema="oscuro"] .rc-acerca .cita::before { box-shadow: 0 1px 3px rgba(0, 0, 0, .7), 0 2px 6px rgba(0, 0, 0, .35); }
 .rc-acerca p { color: var(--txt); opacity: .88; margin-bottom: 10px; line-height: 1.65; }
-.rc-acerca .past { font-weight: 800; color: var(--titulo); font-size: 16.1px; opacity: 1; }
-.rc-acerca .cita { font-style: italic; margin-top: 24px; }
+.rc-acerca .past { font-weight: 800; font-size: inherit; color: var(--titulo); opacity: 1; }
+html[data-rc-tema="oscuro"] .rc-acerca .past { color: #FFFFFF; }
+.rc-acerca .cita { font-style: italic; margin-top: 30px; }
 .rc-acerca .ver { font-size: 11.3px; color: var(--txt2); margin-top: 18px; }
 .rc-acerca .enl { display: inline-block; margin: 4px 6px; color: var(--prim); font-weight: 700; font-size: 13.2px; }
 .rc-libros-esc { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px 14px; padding: 12px 4px; }
@@ -470,9 +474,9 @@ html[data-rc-tema="oscuro"] .rc-play { color: #0B1226 !important; }
 .rc-libro-esc .num, .libro3d .num { position: absolute; top: -4px; left: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--rojo); color: #fff; font-weight: 800; display: grid; place-items: center; font-size: 13.2px; z-index: 2; box-shadow: 0 2px 6px rgba(0, 0, 0, .35); }
 /* ── Libro 3D (paralelepípedo con CSS 3D) ── */
 .libro3d { --d: 18px; position: relative; perspective: 900px; width: 100%; aspect-ratio: 1 / 1.42; }
-.l3-cuerpo { position: relative; width: 84%; height: 100%; margin: 0 auto; transform-style: preserve-3d; transform: rotateY(-26deg) rotateX(-10deg); transition: transform .35s cubic-bezier(.2, .8, .3, 1); }
-.rc-libro-esc:hover .l3-cuerpo, .rc-libro-esc:focus-visible .l3-cuerpo { transform: rotateY(-38deg) rotateX(-13deg) translateY(-4px); }
-.rc-libro-esc:active .l3-cuerpo { transform: rotateY(-30deg) rotateX(-10deg) scale(.97); }
+.l3-cuerpo { position: relative; width: 84%; height: 100%; margin: 0 auto; transform-style: preserve-3d; transform: rotateY(-26deg) rotateX(-10deg); }
+/* Todos los libros con el mismo giro, siempre: sin cambios al pasar el cursor, tocar o aparecer */
+.rc-libro-esc, .rc-libro-esc .libro3d, .rc-libro-esc .l3-cuerpo { animation: none !important; transition: none !important; }
 .l3-cara { position: absolute; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 .l3-frente { inset: 0; transform: translateZ(calc(var(--d) / 2)); border-radius: 2px 5px 5px 2px; overflow: hidden; background: var(--chip); }
 .l3-frente img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -486,7 +490,6 @@ html[data-rc-tema="oscuro"] .rc-play { color: #0B1226 !important; }
 .l3-sombra { position: absolute; left: 12%; width: 80%; bottom: -6px; height: 16px; background: rgba(0, 0, 0, .42); filter: blur(9px); border-radius: 50%; transform: rotate(-3deg); }
 html[data-rc-tema="oscuro"] .l3-sombra { background: rgba(0, 0, 0, .7); }
 .libro3d.mini { --d: 12px; width: 124px; flex: none; }
-@media (prefers-reduced-motion: reduce) { .l3-cuerpo { transition: none; } }
 .rc-libro-esc b { display: block; margin-top: 10px; color: var(--titulo); font-size: 14.2px; }
 .rc-libro-esc small { color: var(--txt2); }
 .rc-guia-cab { display: flex; gap: 16px; align-items: center; padding: 10px 0 18px; }
