@@ -80,6 +80,8 @@
     escuela: '<path d="M22 10 12 5 2 10l10 5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/>',
     donar: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v9h14v-9"/><line x1="12" y1="8" x2="12" y2="21"/><path d="M12 8H7.5a2.5 2.5 0 1 1 0-5C11 3 12 8 12 8zM12 8h4.5a2.5 2.5 0 1 0 0-5C13 3 12 8 12 8z"/>',
     radio: '<circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4M19.1 4.9a10 10 0 0 1 0 14.2M4.9 19.1a10 10 0 0 1 0-14.2"/>',
+    hombre: '<circle cx="12" cy="4.6" r="2.4"/><path d="M8.2 21v-7.5H6.6V10a2.2 2.2 0 0 1 2.2-2.2h6.4a2.2 2.2 0 0 1 2.2 2.2v3.5h-1.6V21"/><line x1="12" y1="14" x2="12" y2="21"/>',
+    mujer: '<circle cx="12" cy="4.6" r="2.4"/><path d="M12 8 6.8 17.2h3.4V22h3.6v-4.8h3.4z"/>',
     check: '<polyline points="20 6 9 17 4 12"/>'
   };
   RC.ico = function (n) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + (IC[n] || '') + '</svg>'; };
@@ -316,7 +318,7 @@
   const hooksRuta = [];
   RC.alCambiarRuta = function (f) { hooksRuta.push(f); };
 
-  function esExterna(hash) { return /^#admin/.test(hash) || /^#\/privacidad/.test(hash); }
+  function esExterna(hash) { return /^#admin/.test(hash) || /^#\/privacidad/.test(hash) || /^#(hombres?|damas?|caballeros?|mujeres?)\/?$/i.test(hash); }
   /** Cambia de ruta sin añadir al historial (p. ej. pasar de capítulo). dir: 'adelante' | 'atras' | 'fade' */
   RC.reemplazar = function (hash, dir) { RC.soloReemplazo = true; RC.dirForzada = dir || 'fade'; location.replace(hash); };
   RC.atras = function () {

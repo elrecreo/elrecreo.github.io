@@ -14,7 +14,13 @@
     const cont = h('div', { class: 'rc-dev' });
     pag.appendChild(cont);
     let guardado = RC.leer('dev', null);   // { version, url }
-    let blobListo = null, blobDe = null, fab = null;
+    let blobListo = null, blobDe = null, fab = null, fabGrupos = null;
+
+    // Dos accesos sin nombre: Hombres y Damas (siempre visibles, aunque aún no haya imagen del día)
+    fabGrupos = h('div', { class: 'rc-dev-grupos' },
+      h('button', { class: 'hombres', 'aria-label': 'Hombre de valor', title: 'Hombre de valor', html: RC.ico('hombre'), onclick: function () { location.hash = '#/devocional/hombres'; } }),
+      h('button', { class: 'damas', 'aria-label': 'Devocional de mujer a mujer', title: 'Devocional de mujer a mujer', html: RC.ico('mujer'), onclick: function () { location.hash = '#/devocional/damas'; } }));
+    document.getElementById('recreo').appendChild(fabGrupos);
 
     function pintar(d, animar) {
       cont.innerHTML = '';
@@ -48,7 +54,7 @@
         else RC.aviso('No se pudo compartir la imagen.', 'mal');
       }
     }
-    ctx.alSalir(function () { if (fab) { fab.remove(); fab = null; } });
+    ctx.alSalir(function () { if (fab) { fab.remove(); fab = null; } if (fabGrupos) { fabGrupos.remove(); fabGrupos = null; } });
 
     async function sincronizar() {
       const conBarra = !guardado || RC.sync.debeBarra('devocional', RC.sync.BARRA_DEVOCIONAL);
@@ -68,6 +74,67 @@
     }
     if (guardado) pintar(guardado); else cont.appendChild(cargando());
     sincronizar();
+  });
+
+  // ═══════════════════ DEVOCIONAL DE HOMBRES / DAMAS (anuncios de texto, imagen o audio) ═══════════════════
+  const GRUPOS_DEV = {
+    hombres: { titulo: 'HOMBRE DE VALOR', icono: 'hombre', vacio: 'Aún no hay devocionales para hombres.\nMuy pronto aparecerán aquí.' },
+    damas:   { titulo: 'DEVOCIONAL DE MUJER A MUJER', icono: 'mujer', vacio: 'Aún no hay devocionales para damas.\nMuy pronto aparecerán aquí.' }
+  };
+  RC.ruta(/^devocional\/(hombres|damas)$/, { profundidad: 1, tab: null, padre: '#/devocional' }, function (ctx, grupo) {
+    const info = GRUPOS_DEV[grupo];
+    RC.barra({ atras: true, titulo: 'Devocional', derecha: [] });
+    const pag = ctx.pagina;
+    const cont = h('div', { class: 'rc-cont', style: { paddingTop: '10px' } });
+    pag.appendChild(h('div', { class: 'rc-grupo-cab ' + grupo }, h('span', { class: 'ico', html: RC.ico(info.icono) }), h('h1', { text: info.titulo })));
+    pag.appendChild(cont);
+    const clave = 'devgrupo_' + grupo;
+    let items = RC.leer(clave, []);
+
+    function visor(d) {
+      const img = h('img', { alt: d.titulo || info.titulo, onclick: function () { img.classList.toggle('zoom'); } });
+      const v = h('div', { class: 'rc-visor' }, h('div', { class: 'barra' },
+        h('button', { class: 'rc-btn-ico', 'aria-label': 'Cerrar', html: RC.ico('cerrar'), onclick: function () { v.remove(); } }), h('span')),
+        h('div', { class: 'lienzo' }, img));
+      RC.$('#recreo').appendChild(v);
+      RC.imagen(img, RC.urlsDrive(d.mediaUrl, 2000), null, function () { img.alt = 'No se pudo cargar la imagen'; });
+    }
+    function tarjeta(d) {
+      const el = h('article', { class: 'rc-gcard ' + d.tipo });
+      if (d.titulo) el.appendChild(h('h2', { text: d.titulo }));
+      if (d.tipo === 'imagen') {
+        const img = h('img', { alt: d.titulo || 'Imagen', loading: 'lazy' });
+        const fl = h('div', { class: 'fl', role: 'button', tabindex: '0', 'aria-label': 'Ver imagen', onclick: function () { visor(d); }, onkeydown: function (e) { if (e.key === 'Enter') visor(d); } }, img);
+        RC.imagen(img, RC.urlsDrive(d.mediaUrl, 1200), function () { fl.style.minHeight = '0'; }, function () { fl.remove(); });
+        el.appendChild(fl);
+      } else if (d.tipo === 'audio') {
+        el.appendChild(h('audio', { controls: '', preload: 'none', src: d.mediaUrl }));
+      }
+      if (d.texto) el.appendChild(h('p', { class: 'tx', text: d.texto }));
+      if (d.fecha) el.appendChild(h('div', { class: 'fe', text: d.fecha }));
+      return el;
+    }
+    function pintar() {
+      cont.innerHTML = '';
+      if (!items.length) { cont.appendChild(vacio('📖', info.vacio)); return; }
+      items.forEach(function (d) { cont.appendChild(tarjeta(d)); });
+      RC.entrada(cont.querySelectorAll('.rc-gcard'), 0);
+    }
+    if (items.length) pintar(); else cont.appendChild(cargando());
+    RC.sync.barra(); RC.sync.spinner(true);
+    RC.api('obtener_devocional_grupo', { grupo: grupo, limite: 30 }).then(function (r) {
+      if (!ctx.vigente()) return;
+      const lista = r.items || [];
+      RC.guardar(clave, lista);
+      if (JSON.stringify(lista) !== JSON.stringify(items) || !cont.querySelector('.rc-gcard')) { items = lista; pintar(); }
+    }).catch(function (e) {
+      if (!ctx.vigente()) return;
+      if (!items.length) {
+        cont.innerHTML = '';
+        cont.appendChild(vacio('📖', e && e.red ? 'Sin conexión.\nConéctate a internet para ver los devocionales.' : 'No se pudieron cargar los devocionales.\nIntenta de nuevo más tarde.'));
+        cont.appendChild(reintentar(function () { location.reload(); }));
+      }
+    }).then(function () { if (ctx.vigente()) RC.sync.spinner(false); });
   });
 
   // ═══════════════════ VIDEOS (feed vertical) ═══════════════════

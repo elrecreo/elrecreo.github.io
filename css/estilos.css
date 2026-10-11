@@ -135,3 +135,26 @@ details.fondo[open] summary { margin-bottom: 12px; }
 .priv-volver { margin: 0 0 14px; font-size: 14px; font-weight: 600; }
 .priv-volver a { color: var(--azul); text-decoration: none; }
 .priv-volver a:hover { text-decoration: underline; }
+
+/* ── Admin devocional Hombres / Damas (#hombres, #damas) ── */
+#grupos:empty { display: none; }
+#grupos { --gr: var(--azul); }
+#grupos [hidden] { display: none !important; }
+#grupos .cabecera { background: var(--gr); }
+#grupos .marca { padding: 10px 0; }
+.gr-panel { max-width: 720px; }
+.gr-modos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 0 6px; }
+.gr-modo { min-height: 46px; border: 2px solid var(--linea); background: #fff; color: var(--gris); border-radius: 8px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+.gr-modo.on { border-color: var(--gr); background: var(--gr); color: #fff; }
+.gr-modo:disabled:not(.on) { opacity: .4; cursor: default; }
+.gr-rec { display: flex; align-items: center; gap: 14px; }
+button.btn.gr-grabar { min-height: 48px; background: #fff; color: var(--mal); border-color: #e2b9b3; font-size: 15px; }
+button.btn.gr-grabar.grabando { background: var(--mal); color: #fff; border-color: var(--mal); animation: gr-pulso 1.2s ease-in-out infinite; }
+.gr-tiempo { font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 700; color: var(--marino); }
+.gr-o { margin: 12px 0 6px; font-size: 13px; color: var(--gris); }
+.gr-audio { display: block; width: 100%; max-width: 420px; margin-top: 10px; }
+.gr-vista { display: block; max-width: 100%; max-height: 320px; margin-top: 12px; border-radius: 8px; border: 1px solid var(--linea); }
+.gr-nota { margin-top: 10px; font-size: 13px; color: var(--gris); }
+.gr-extracto { margin-top: 6px; white-space: pre-wrap; font-size: 14px; color: var(--tinta); }
+@keyframes gr-pulso { 50% { opacity: .65; } }
+@media (prefers-reduced-motion: reduce) { button.btn.gr-grabar.grabando { animation: none; } }
