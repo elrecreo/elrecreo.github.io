@@ -467,14 +467,29 @@ html[data-rc-tema="oscuro"] .rc-play { color: #0B1226 !important; }
 .rc-acerca .enl { display: inline-block; margin: 4px 6px; color: var(--prim); font-weight: 700; font-size: 13.2px; }
 .rc-libros-esc { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px 14px; padding: 12px 4px; }
 .rc-libro-esc { text-align: center; }
-.rc-libro-esc .port { position: relative; border-radius: 10px 16px 16px 10px; overflow: hidden; box-shadow: 4px 8px 18px rgba(0, 0, 0, .28); aspect-ratio: 1 / 1.42; background: var(--chip); transition: transform .2s; }
-.rc-libro-esc:hover .port { transform: translateY(-4px) rotate(-1deg); }
-.rc-libro-esc .port img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.rc-libro-esc .num { position: absolute; top: 8px; left: 8px; width: 28px; height: 28px; border-radius: 50%; background: var(--rojo); color: #fff; font-weight: 800; display: grid; place-items: center; font-size: 13.2px; }
+.rc-libro-esc .num, .libro3d .num { position: absolute; top: -4px; left: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--rojo); color: #fff; font-weight: 800; display: grid; place-items: center; font-size: 13.2px; z-index: 2; box-shadow: 0 2px 6px rgba(0, 0, 0, .35); }
+/* ── Libro 3D (paralelepípedo con CSS 3D) ── */
+.libro3d { --d: 18px; position: relative; perspective: 900px; width: 100%; aspect-ratio: 1 / 1.42; }
+.l3-cuerpo { position: relative; width: 84%; height: 100%; margin: 0 auto; transform-style: preserve-3d; transform: rotateY(-26deg) rotateX(-10deg); transition: transform .35s cubic-bezier(.2, .8, .3, 1); }
+.rc-libro-esc:hover .l3-cuerpo, .rc-libro-esc:focus-visible .l3-cuerpo { transform: rotateY(-38deg) rotateX(-13deg) translateY(-4px); }
+.rc-libro-esc:active .l3-cuerpo { transform: rotateY(-30deg) rotateX(-10deg) scale(.97); }
+.l3-cara { position: absolute; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.l3-frente { inset: 0; transform: translateZ(calc(var(--d) / 2)); border-radius: 2px 5px 5px 2px; overflow: hidden; background: var(--chip); }
+.l3-frente img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.l3-frente::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 14px; z-index: 1; background: linear-gradient(90deg, rgba(0, 0, 0, .45), rgba(255, 255, 255, .14) 55%, rgba(0, 0, 0, 0)); }
+.l3-brillo { position: absolute; inset: 0; background: linear-gradient(105deg, rgba(255, 255, 255, .28), rgba(255, 255, 255, 0) 38%, rgba(0, 0, 0, .12)); pointer-events: none; }
+.l3-atras { inset: 0; transform: translateZ(calc(var(--d) / -2)) rotateY(180deg); background: #2b2f45; border-radius: 5px 2px 2px 5px; }
+.l3-lomo { top: 0; bottom: 0; width: var(--d); left: calc(var(--d) / -2); transform: rotateY(-90deg); background: linear-gradient(90deg, #1b2347, #343f76 50%, #1b2347); border-radius: 2px 0 0 2px; }
+.l3-paginas { top: 2px; bottom: 2px; width: var(--d); left: calc(100% - var(--d) / 2); transform: rotateY(90deg); background: repeating-linear-gradient(90deg, #fbf7ec 0 1.5px, #d9d1bb 1.5px 3px); }
+.l3-arriba { left: 2px; right: 0; height: var(--d); top: calc(var(--d) / -2); transform: rotateX(90deg); background: repeating-linear-gradient(180deg, #fffdf6 0 1.5px, #e0d8c3 1.5px 3px); }
+.l3-abajo { left: 2px; right: 0; height: var(--d); top: calc(100% - var(--d) / 2); transform: rotateX(-90deg); background: repeating-linear-gradient(180deg, #e9e1cc 0 1.5px, #c9c0a8 1.5px 3px); }
+.l3-sombra { position: absolute; left: 12%; width: 80%; bottom: -6px; height: 16px; background: rgba(0, 0, 0, .42); filter: blur(9px); border-radius: 50%; transform: rotate(-3deg); }
+html[data-rc-tema="oscuro"] .l3-sombra { background: rgba(0, 0, 0, .7); }
+.libro3d.mini { --d: 12px; width: 124px; flex: none; }
+@media (prefers-reduced-motion: reduce) { .l3-cuerpo { transition: none; } }
 .rc-libro-esc b { display: block; margin-top: 10px; color: var(--titulo); font-size: 14.2px; }
 .rc-libro-esc small { color: var(--txt2); }
 .rc-guia-cab { display: flex; gap: 16px; align-items: center; padding: 10px 0 18px; }
-.rc-guia-cab img { width: 110px; border-radius: 8px 12px 12px 8px; box-shadow: 4px 8px 18px rgba(0, 0, 0, .28); }
 .rc-guia-cab h1 { font-size: 20.8px; font-weight: 800; color: var(--titulo); }
 .rc-guia-cab p { color: var(--txt2); }
 .rc-guia { background: var(--tarjeta); border-radius: 18px; box-shadow: var(--sombra-s); padding: 14px 16px; margin-bottom: 12px; }
@@ -501,3 +516,12 @@ html[data-rc-tema="oscuro"] .rc-guia .t i { color: #0B1226; }
 
 /* Video sin miniatura disponible: fondo de marca en vez de un recuadro vacío */
 .rc-video .media.sin-mini { background: linear-gradient(135deg, #26315C, #4AA8FF); }
+
+/* ── Ruta de nuestro crecimiento (Sobre nuestra iglesia) ── */
+.rc-ruta { display: flex; flex-direction: column; align-items: center; margin: 6px 0 4px; }
+.rc-ruta .paso { display: flex; flex-direction: column; align-items: center; }
+.rc-ruta .cnx { width: 3px; height: 30px; margin: 8px 0; border-radius: 2px; background: repeating-linear-gradient(180deg, var(--prim) 0 6px, transparent 6px 11px); opacity: .6; }
+.rc-ruta .ico { position: relative; width: 74px; height: 74px; border-radius: 50%; display: grid; place-items: center; background: var(--tarjeta); box-shadow: var(--sombra-s), inset 0 0 0 2px var(--prim); color: var(--prim); }
+.rc-ruta .ico svg { width: 38px; height: 38px; fill: currentColor; }
+.rc-ruta .ico em { position: absolute; top: -4px; right: -4px; width: 26px; height: 26px; border-radius: 50%; background: var(--rojo); color: #fff; font-style: normal; font-weight: 800; font-size: 13px; display: grid; place-items: center; box-shadow: 0 2px 6px rgba(0, 0, 0, .3); }
+.rc-ruta b { margin-top: 8px; color: var(--titulo); font-size: 15.1px; }

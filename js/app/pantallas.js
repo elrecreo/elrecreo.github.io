@@ -289,6 +289,24 @@
       fila('img/iconos/bancolombia.png', 'Cuenta de ahorros Bancolombia', D.DONACION_CUENTA, 'Transferencia bancaria', 'Número de cuenta')));
   });
 
+  // ═══════════════════ Ruta de nuestro crecimiento (Acerca de) ═══════════════════
+  // Íconos tipo logo (relleno). 1 Escuela Bíblica → 2 Casa de Oración → 3 Consolidación.
+  const RUTA = [
+    { n: 1, t: 'Escuela Bíblica', svg: '<path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3 1 9l11 6 9-4.91V17h2V9L12 3z"/>' },
+    { n: 2, t: 'Casa de Oración', svg: '<path fill-rule="evenodd" d="M12 2.5 22 11.5h-3V21H5v-9.5H2zM11 8v2.5H8.5v2H11V17h2v-4.5h2.5v-2H13V8z"/>' },
+    { n: 3, t: 'Consolidación', svg: '<path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>' }
+  ];
+  function rutaCrecimiento() {
+    const filas = [];
+    RUTA.forEach(function (r, i) {
+      if (i) filas.push(h('div', { class: 'cnx', 'aria-hidden': 'true' }));   // conector entre pasos
+      filas.push(h('div', { class: 'paso' },
+        h('div', { class: 'ico' }, h('span', { html: '<svg viewBox="0 0 24 24" aria-hidden="true">' + r.svg + '</svg>', style: { display: 'contents' } }), h('em', { text: String(r.n) })),
+        h('b', { text: r.t })));
+    });
+    return h('div', { class: 'rc-ruta' }, filas);
+  }
+
   // ═══════════════════ ACERCA DE ═══════════════════
   RC.ruta(/^acerca$/, { profundidad: 1, tab: null, padre: '#/biblia' }, function (ctx) {
     RC.barra({ atras: true, titulo: 'Sobre nuestra iglesia', derecha: [] });
@@ -296,13 +314,14 @@
     ctx.pagina.appendChild(h('div', { class: 'rc-acerca' },
       h('img', { class: 'logo', src: 'img/iconos/icon-192.png', alt: 'Logo Centro Cristiano el Recreo' }), h('h1', { text: 'Centro Cristiano el Recreo' }),
       h('h2', { text: '✦  ACERCA DE LA APP  ✦' }),
-      p('Centro Cristiano el Recreo nació con un propósito sencillo y profundo: poner la Palabra de Dios en las manos de cada miembro de nuestra congregación, de una manera bella, accesible y siempre disponible.'),
+      p('Esta app nació con el propósito de plantar la Palabra de Dios en los corazones de cada miembro de nuestra congregación, haciéndola accesible y disponible para todos los que la requieren.'),
       p('Con Centro Cristiano el Recreo puedes leer la Biblia en múltiples versiones, como RV1960, RVA2015, NVI, NTV, LBLA, etc; también disfrutar los devocionales diarios, explorar los videos y prédicas de nuestros pastores, y mucho más que seguimos construyendo con amor para ti.'),
       h('h2', { text: '✦  NUESTRA IGLESIA  ✦' }),
-      p('La iglesia Centro Cristiano el Recreo es una congregación evangélica ubicada en el barrio El Recreo, en la Cl. 2 #35A-70, en la hermosa ciudad de Cartagena de Indias, Bolívar.'),
+      p('La iglesia Centro Cristiano el Recreo es una congregación cristiana ubicada en el barrio El Recreo, en la Cl. 2 #35A-70, en la hermosa ciudad de Cartagena de Indias, Bolívar.'),
       p('Somos parte del Concilio de las Asambleas de Dios, y bajo la visión y el liderazgo de nuestros pastores principales,'),
       p('Ps. Jesús Blanco  &  Ps. Eimi Blanco', 'past'),
-      p('…la iglesia Centro Cristiano el Recreo es hoy una congregación viva, en crecimiento, con un liderazgo que cada día se multiplica para servir mejor al Señor y a su pueblo.'),
+      p('…la iglesia Centro Cristiano el Recreo es hoy una congregación en crecimiento constante, con un liderazgo capacitado para servir a Dios a través de la extensión del reino.'),
+      h('h2', { text: '✦  RUTA DE NUESTRO CRECIMIENTO  ✦' }), rutaCrecimiento(),
       h('h2', { text: '✦  VISIÓN  ✦' }),
       p('Ser una iglesia que impacte las familias de la comunidad y sus alrededores, por medio del verdadero fundamento, Cristo.'),
       h('h2', { text: '✦  MISIÓN  ✦' }),
@@ -315,11 +334,26 @@
   });
 
   // ═══════════════════ ESCUELA BÍBLICA ═══════════════════
+  /** Libro en 3D (paralelepípedo): portada, lomo, hojas a la derecha y arriba, y base. Número opcional sobre la portada. */
+  function libro3d(d, numero, extra) {
+    return h('div', { class: 'libro3d' + (extra ? ' ' + extra : '') },
+      h('div', { class: 'l3-sombra' }),
+      h('div', { class: 'l3-cuerpo' },
+        h('div', { class: 'l3-cara l3-atras' }),
+        h('div', { class: 'l3-cara l3-lomo' }),
+        h('div', { class: 'l3-cara l3-paginas' }),
+        h('div', { class: 'l3-cara l3-arriba' }),
+        h('div', { class: 'l3-cara l3-abajo' }),
+        h('div', { class: 'l3-cara l3-frente' },
+          h('img', { src: 'img/escuela/' + d.portada, alt: 'Portada ' + d.titulo }),
+          h('i', { class: 'l3-brillo' }))),
+      numero ? h('span', { class: 'num', text: String(numero) }) : null);
+  }
   RC.ruta(/^escuela$/, { profundidad: 1, tab: null, padre: '#/biblia' }, function (ctx) {
     RC.barra({ atras: true, titulo: 'Escuela Bíblica', derecha: [] });
     const grid = h('div', { class: 'rc-libros-esc' }, D.DISCIPULADOS.map(function (d, i) {
       return h('button', { class: 'rc-libro-esc', 'aria-label': d.titulo, onclick: function () { location.hash = '#/escuela/' + d.id; } },
-        h('div', { class: 'port' }, h('img', { src: 'img/escuela/' + d.portada, alt: 'Portada ' + d.titulo }), h('span', { class: 'num', text: String(i + 1) })),
+        libro3d(d, i + 1),
         h('b', { text: d.titulo }), h('small', { text: d.subtitulo }));
     }));
     ctx.pagina.appendChild(h('div', { class: 'rc-cont' }, h('div', { class: 'rc-h-sec', text: 'DISCIPULADOS' }), h('p', { class: 'rc-sub', text: 'Toca un libro para abrir su guía' }), grid));
@@ -335,7 +369,7 @@
         h('ul', null, g.s.map(function (s, i) { return h('li', null, h('em', { text: g.n + '.' + (i + 1) }), h('span', { text: s })); }))));
     });
     ctx.pagina.appendChild(h('div', { class: 'rc-cont' },
-      h('div', { class: 'rc-guia-cab' }, h('img', { src: 'img/escuela/' + d.portada, alt: 'Portada ' + d.titulo }), h('div', null, h('h1', { text: d.titulo }), h('p', { text: d.subtitulo }))), lista));
+      h('div', { class: 'rc-guia-cab' }, libro3d(d, 0, 'mini'), h('div', null, h('h1', { text: d.titulo }), h('p', { text: d.subtitulo }))), lista));
     RC.entrada(lista.children, 0);
   });
 })();
