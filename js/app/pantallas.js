@@ -313,18 +313,18 @@
     const p = function (t, c) { return h('p', { class: c || '', text: t }); };
     ctx.pagina.appendChild(h('div', { class: 'rc-acerca' },
       h('img', { class: 'logo', src: 'img/iconos/icon-192.png', alt: 'Logo Centro Cristiano el Recreo' }), h('h1', { text: 'Centro Cristiano el Recreo' }),
-      h('h2', { text: '✦  ACERCA DE LA APP  ✦' }),
+      h('h2', { text: 'ACERCA DE LA APP' }),
       p('Esta app nació con el propósito de plantar la Palabra de Dios en los corazones de cada miembro de nuestra congregación, haciéndola accesible y disponible para todos los que la requieren.'),
       p('Con Centro Cristiano el Recreo puedes leer la Biblia en múltiples versiones, como RV1960, RVA2015, NVI, NTV, LBLA, etc; también disfrutar los devocionales diarios, explorar los videos y prédicas de nuestros pastores, y mucho más que seguimos construyendo con amor para ti.'),
-      h('h2', { text: '✦  NUESTRA IGLESIA  ✦' }),
+      h('h2', { text: 'NUESTRA IGLESIA' }),
       p('La iglesia Centro Cristiano el Recreo es una congregación cristiana ubicada en el barrio El Recreo, en la Cl. 2 #35A-70, en la hermosa ciudad de Cartagena de Indias, Bolívar.'),
       p('Somos parte del Concilio de las Asambleas de Dios, y bajo la visión y el liderazgo de nuestros pastores principales,'),
-      p('Ps. Jesús Blanco  &  Ps. Eimi Blanco', 'past'),
+      p('Pastores Jesús & Eimi Blanco', 'past'),
       p('…la iglesia Centro Cristiano el Recreo es hoy una congregación en crecimiento constante, con un liderazgo capacitado para servir a Dios a través de la extensión del reino.'),
-      h('h2', { text: '✦  RUTA DE NUESTRO CRECIMIENTO  ✦' }), rutaCrecimiento(),
-      h('h2', { text: '✦  VISIÓN  ✦' }),
+      h('h2', { text: 'RUTA DE NUESTRO CRECIMIENTO' }), rutaCrecimiento(),
+      h('h2', { text: 'VISIÓN' }),
       p('Ser una iglesia que impacte las familias de la comunidad y sus alrededores, por medio del verdadero fundamento, Cristo.'),
-      h('h2', { text: '✦  MISIÓN  ✦' }),
+      h('h2', { text: 'MISIÓN' }),
       p('Formar siervos competentes y capacitados con la doctrina Bíblica, teniendo como finalidad impactar y transformar nuestra sociedad con el evangelio.'),
       p('"Yo me alegré con los que me decían: A la casa de Jehová iremos."', 'cita'), p('Salmos 122:1', 'past'),
       h('div', { style: { marginTop: '18px' } },
@@ -345,7 +345,7 @@
         h('div', { class: 'l3-cara l3-arriba' }),
         h('div', { class: 'l3-cara l3-abajo' }),
         h('div', { class: 'l3-cara l3-frente' },
-          h('img', { src: 'img/escuela/' + d.portada, alt: 'Portada ' + d.titulo }),
+          h('img', { src: 'img/escuela/' + d.portada, alt: 'Portada ' + d.titulo, width: '360', height: '511', decoding: 'sync' }),
           h('i', { class: 'l3-brillo' }))),
       numero ? h('span', { class: 'num', text: String(numero) }) : null);
   }
@@ -357,7 +357,7 @@
         h('b', { text: d.titulo }), h('small', { text: d.subtitulo }));
     }));
     ctx.pagina.appendChild(h('div', { class: 'rc-cont' }, h('div', { class: 'rc-h-sec', text: 'DISCIPULADOS' }), h('p', { class: 'rc-sub', text: 'Toca un libro para abrir su guía' }), grid));
-    RC.entrada(grid.children, 0);
+    // (sin RC.entrada: los libros aparecen quietos y todos con el mismo giro)
   });
   RC.ruta(/^escuela\/([\w-]+)$/, { profundidad: 2, tab: null, padre: '#/escuela' }, function (ctx, id) {
     const d = D.DISCIPULADOS.find(function (x) { return x.id === id; });
