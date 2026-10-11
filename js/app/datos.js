@@ -7,17 +7,17 @@ window.RCDATA = {
   // [id, nombre, abreviación, testamento (1 = Antiguo, 2 = Nuevo), nº de capítulos]
   LIBROS: [[1, "Génesis", "Gn", 1, 50], [2, "Éxodo", "Ex", 1, 40], [3, "Levítico", "Lv", 1, 27], [4, "Números", "Nm", 1, 36], [5, "Deuteronomio", "Dt", 1, 34], [6, "Josué", "Jos", 1, 24], [7, "Jueces", "Jue", 1, 21], [8, "Rut", "Rt", 1, 4], [9, "1 Samuel", "1S", 1, 31], [10, "2 Samuel", "2S", 1, 24], [11, "1 Reyes", "1R", 1, 22], [12, "2 Reyes", "2R", 1, 25], [13, "1 Crónicas", "1Cr", 1, 29], [14, "2 Crónicas", "2Cr", 1, 36], [15, "Esdras", "Esd", 1, 10], [16, "Nehemías", "Neh", 1, 13], [17, "Ester", "Est", 1, 10], [18, "Job", "Job", 1, 42], [19, "Salmos", "Sal", 1, 150], [20, "Proverbios", "Pr", 1, 31], [21, "Eclesiastés", "Ec", 1, 12], [22, "Cantares", "Cnt", 1, 8], [23, "Isaías", "Is", 1, 66], [24, "Jeremías", "Jer", 1, 52], [25, "Lamentaciones", "Lm", 1, 5], [26, "Ezequiel", "Ez", 1, 48], [27, "Daniel", "Dn", 1, 12], [28, "Oseas", "Os", 1, 14], [29, "Joel", "Jl", 1, 3], [30, "Amós", "Am", 1, 9], [31, "Abdías", "Abd", 1, 1], [32, "Jonás", "Jon", 1, 4], [33, "Miqueas", "Mi", 1, 7], [34, "Nahúm", "Nah", 1, 3], [35, "Habacuc", "Hab", 1, 3], [36, "Sofonías", "Sof", 1, 3], [37, "Hageo", "Hag", 1, 2], [38, "Zacarías", "Zac", 1, 14], [39, "Malaquías", "Mal", 1, 4], [40, "Mateo", "Mt", 2, 28], [41, "Marcos", "Mr", 2, 16], [42, "Lucas", "Lc", 2, 24], [43, "Juan", "Jn", 2, 21], [44, "Hechos", "Hch", 2, 28], [45, "Romanos", "Ro", 2, 16], [46, "1 Corintios", "1Co", 2, 16], [47, "2 Corintios", "2Co", 2, 13], [48, "Gálatas", "Gá", 2, 6], [49, "Efesios", "Ef", 2, 6], [50, "Filipenses", "Fil", 2, 4], [51, "Colosenses", "Col", 2, 4], [52, "1 Tesalonicenses", "1Ts", 2, 5], [53, "2 Tesalonicenses", "2Ts", 2, 3], [54, "1 Timoteo", "1Ti", 2, 6], [55, "2 Timoteo", "2Ti", 2, 4], [56, "Tito", "Tit", 2, 3], [57, "Filemón", "Flm", 2, 1], [58, "Hebreos", "He", 2, 13], [59, "Santiago", "Stg", 2, 5], [60, "1 Pedro", "1P", 2, 5], [61, "2 Pedro", "2P", 2, 3], [62, "1 Juan", "1Jn", 2, 5], [63, "2 Juan", "2Jn", 2, 1], [64, "3 Juan", "3Jn", 2, 1], [65, "Judas", "Jud", 2, 1], [66, "Apocalipsis", "Ap", 2, 22]].map(function (l) { return { id: l[0], nombre: l[1], abrev: l[2], test: l[3], caps: l[4] }; }),
 
-  // Versiones de la Biblia. RV1960 viene incluida. Las demás se cargan desde data/versiones/<archivo>
-  // (si subes ahí el JSON) o, si no está, desde la URL de descarga (puede fallar por CORS en el navegador).
+  // Versiones de la Biblia. Todas viven en este mismo sitio, partidas por libro: data/<carpeta>/<id del libro>.json
+  // (formato { "c": [[v1, v2…], …] }). Se leen al abrir el libro: no hay nada que descargar.
   VERSIONES: [
-    { id: 'RV1960', nombre: 'RV1960', completo: 'Reina Valera 1960', archivo: null, url: null },
-    { id: 'NVI', nombre: 'NVI', completo: 'Nueva Versión Internacional', archivo: 'biblia_nvi.json', url: 'https://github.com/leiderlico/bibliasccr/releases/download/v1/biblia_nvi.json' },
-    { id: 'NTV', nombre: 'NTV', completo: 'Nueva Traducción Viviente', archivo: 'biblia_ntv.json', url: 'https://github.com/leiderlico/bibliasccr/releases/download/v1/biblia_ntv.json' },
-    { id: 'RVA2015', nombre: 'RVA2015', completo: 'Reina Valera 2015', archivo: 'biblia_rva2015.json', url: 'https://github.com/leiderlico/bibliasccr/releases/download/v1/biblia_rva2015.json' },
-    { id: 'LBLA', nombre: 'LBLA', completo: 'La Biblia de las Américas', archivo: 'biblia_lbla.json', url: 'https://github.com/leiderlico/bibliasccr/releases/download/v1/biblia_lbla.json' },
-    { id: 'BDO', nombre: 'BDO', completo: 'Biblia del Oso', archivo: 'bdo.json', url: 'https://github.com/leiderlico/bibliasccr/releases/download/v1/bdo.json' },
-    { id: 'BTX', nombre: 'BTX', completo: 'La Biblia Textual', archivo: 'btx.json', url: 'https://github.com/leiderlico/bibliasccr/releases/download/v1/btx.json' },
-    { id: 'PDT', nombre: 'PDT', completo: 'Palabra de Dios para Todos', archivo: 'pdt.json', url: 'https://github.com/leiderlico/bibliasccr/releases/download/v1/pdt.json' }
+    { id: 'RV1960',  nombre: 'RV1960',  completo: 'Reina Valera 1960',            carpeta: 'data/rv1960' },
+    { id: 'NVI',     nombre: 'NVI',     completo: 'Nueva Versión Internacional',  carpeta: 'data/versiones/nvi' },
+    { id: 'NTV',     nombre: 'NTV',     completo: 'Nueva Traducción Viviente',    carpeta: 'data/versiones/ntv' },
+    { id: 'RVA2015', nombre: 'RVA2015', completo: 'Reina Valera 2015',            carpeta: 'data/versiones/rva2015' },
+    { id: 'LBLA',    nombre: 'LBLA',    completo: 'La Biblia de las Américas',    carpeta: 'data/versiones/lbla' },
+    { id: 'BDO',     nombre: 'BDO',     completo: 'Biblia del Oso',               carpeta: 'data/versiones/bdo' },
+    { id: 'BTX',     nombre: 'BTX',     completo: 'La Biblia Textual',            carpeta: 'data/versiones/btx' },
+    { id: 'PDT',     nombre: 'PDT',     completo: 'Palabra de Dios para Todos',   carpeta: 'data/versiones/pdt' }
   ],
 
   // Colores de resaltado (HighlightStore.kt de la app, con transparencia ~40 %)

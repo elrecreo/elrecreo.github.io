@@ -1,4 +1,4 @@
-/* Datos de la Biblia para la app: versiones, comentarios (Biblia de estudio), búsqueda por texto y por voz.
+/* Datos de la Biblia para la app: versiones (leídas por libro, sin descargas), comentarios (Biblia de estudio), búsqueda por texto y por voz.
    Lógica portada de BibliaRepository.kt / SuggestionManager.kt de la app Android. */
 (function () {
   'use strict';
@@ -6,64 +6,40 @@
   const B = RC.biblia = {};
 
   const cacheLibros = {};     // 'RV1960:43' -> Promise<[[v1,v2..],..]>
-  const cacheVersion = {};    // 'NVI' -> Promise<{libroId: [[..]]}>  (versiones descargadas, ya partidas por libro)
 
   B.versiones = function () { return D.VERSIONES; };
   B.version = function (id) { return D.VERSIONES.find(function (v) { return v.id === id; }) || D.VERSIONES[0]; };
   B.versionActiva = function () { return B.version(RC.leer('version', 'RV1960')).id; };
   B.ponerVersion = function (id) { RC.guardar('version', id); };
-  /** ¿La versión ya está lista sin descargar? (RV1960 siempre; las demás si ya se bajaron en esta sesión o están guardadas). */
-  B.disponible = function (id) { return id === 'RV1960' || !!cacheVersion[id] || RC.leer('descargada:' + id, false); };
+  /** Todas las versiones se leen directo del sitio, libro por libro: no hay descargas. (Se deja por compatibilidad.) */
+  B.disponible = function () { return true; };
 
-  function limpiar(t) { return String(t || '').replace(/\/n/g, ' ').replace(/ {2,}/g, ' ').trim(); }
-
-  /** Convierte {libros, versiculos} (formato de la app) a { libroId: [[v1..],[..]] } */
-  function partir(json) {
-    const por = {};
-    (json.versiculos || []).forEach(function (v) {
-      const l = por[v.libro_id] = por[v.libro_id] || [];
-      const c = l[v.capitulo - 1] = l[v.capitulo - 1] || [];
-      c[v.versiculo - 1] = limpiar(v.texto);
-    });
-    Object.keys(por).forEach(function (k) { for (let i = 0; i < por[k].length; i++) { por[k][i] = (por[k][i] || []).map(function (t) { return t || ''; }); } });
-    return por;
+  /** Pide un JSON con reintentos (por si la conexión falla un instante). 404 = ese libro no existe en la versión → null. */
+  async function pedir(url, intentos) {
+    let ultimo;
+    for (let i = 0; i < intentos; i++) {
+      try {
+        const r = await fetch(url);
+        if (r.status === 404) return null;
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return await r.json();
+      } catch (e) {
+        ultimo = e;
+        if (i < intentos - 1) await new Promise(function (ok) { setTimeout(ok, 400 * (i + 1)); });
+      }
+    }
+    throw ultimo || new Error('Sin conexión');
   }
 
-  /** Descarga una versión (primero data/versiones/<archivo>, luego la URL original). */
-  B.descargarVersion = function (id) {
-    if (cacheVersion[id]) return cacheVersion[id];
-    const v = B.version(id);
-    const p = (async function () {
-      const fuentes = [];
-      if (v.archivo) fuentes.push('data/versiones/' + v.archivo);
-      if (v.url) fuentes.push(v.url);
-      let ultimo;
-      for (let i = 0; i < fuentes.length; i++) {
-        try {
-          const r = await fetch(fuentes[i]);
-          if (!r.ok) throw new Error('HTTP ' + r.status);
-          const t = await r.text();
-          const por = partir(JSON.parse(t));
-          if (!Object.keys(por).length) throw new Error('Archivo vacío');
-          RC.guardar('descargada:' + id, true);
-          return por;
-        } catch (e) { ultimo = e; }
-      }
-      throw new Error('No se pudo descargar ' + v.completo + '. ' + (ultimo && ultimo.message ? '(' + ultimo.message + ')' : ''));
-    })();
-    cacheVersion[id] = p;
-    p.catch(function () { delete cacheVersion[id]; });
-    return p;
-  };
-
-  /** Capítulos de un libro: [[v1, v2…], …] (índice 0 = capítulo 1). */
+  /** Capítulos de un libro: [[v1, v2…], …] (índice 0 = capítulo 1). Solo se pide el libro que se está leyendo. */
   B.libro = function (libroId, version) {
     version = version || B.versionActiva();
     const k = version + ':' + libroId;
     if (!cacheLibros[k]) {
-      cacheLibros[k] = (version === 'RV1960'
-        ? fetch('data/rv1960/' + libroId + '.json').then(function (r) { if (!r.ok) throw new Error('No se pudo cargar el libro'); return r.json(); }).then(function (j) { return j.c; })
-        : B.descargarVersion(version).then(function (por) { return por[libroId] || []; }));
+      const v = B.version(version);
+      cacheLibros[k] = pedir(v.carpeta + '/' + libroId + '.json', 3)
+        .then(function (j) { return j ? j.c : []; })
+        .catch(function () { throw new Error('No se pudo cargar ' + v.completo + '. Revisa tu conexión.'); });
       cacheLibros[k].catch(function () { delete cacheLibros[k]; });
     }
     return cacheLibros[k];

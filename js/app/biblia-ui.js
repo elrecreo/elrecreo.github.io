@@ -390,25 +390,21 @@
     }
     function abrirVersiones(ancla) {
       RC.popup(ancla, B.versiones().map(function (v) {
-        return { texto: (B.disponible(v.id) ? '' : '⬇ ') + v.completo, activo: v.id === versionId, fn: function () { cambiarVersion(v.id); } };
+        return { texto: v.completo, activo: v.id === versionId, fn: function () { cambiarVersion(v.id); } };
       }), 250);
     }
+    // Sin descargas: al elegir una versión se lee directo el libro que estás viendo (unos pocos KB).
     async function cambiarVersion(id) {
       if (id === versionId) return;
-      if (!B.disponible(id)) {
-        RC.modal('Descargar ' + B.version(id).completo, h('p', { text: 'Esta versión (~6 MB) se descargará una sola vez. ¿Continuar?' }), [
-          { texto: 'Cancelar', sec: true },
-          { texto: 'Descargar', fn: function () { aplicarVersion(id, true); } }]);
-      } else aplicarVersion(id, false);
-    }
-    async function aplicarVersion(id, descargando) {
-      if (descargando) RC.aviso('Descargando ' + B.version(id).nombre + '…', null, 6000);
+      let avisado = false;
+      const lento = setTimeout(function () { avisado = true; RC.aviso('Cargando ' + B.version(id).nombre + '…', null, 6000); }, 450);
       try {
         const vs = await B.capitulo(libroId, cap, id);
+        clearTimeout(lento);
         if (!ctx.vigente()) return;
         versionId = id; B.ponerVersion(id); versos = vs; limpiarSel(); pintarVersos(); pintarBarra();
-        if (descargando) RC.aviso(B.version(id).nombre + ' lista', 'ok');
-      } catch (e) { RC.aviso(e.message || 'No se pudo cambiar la versión', 'mal', 4200); }
+        if (avisado) RC.aviso(B.version(id).nombre + ' lista', 'ok');
+      } catch (e) { clearTimeout(lento); RC.aviso(e.message || 'No se pudo cambiar la versión', 'mal', 4200); }
     }
     function abrirMiniLibros() {
       const cuerpo = h('div', { class: 'rc-minilibros' });
