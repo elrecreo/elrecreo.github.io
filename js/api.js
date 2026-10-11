@@ -120,3 +120,48 @@ function idYoutube(url) {
   const m = String(url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/))([A-Za-z0-9_-]{11})/);
   return m ? m[1] : '';
 }
+
+
+/**
+ * Audio del devocional de hombres/damas. Los links de Drive no sirven para reproducir audio,
+ * así que el script lo entrega en base64 y aquí se convierte en un Blob local (queda en memoria).
+ */
+const _audiosGrupo = {};
+function urlAudioGrupo(id, llamarFn) {
+  if (!_audiosGrupo[id]) {
+    _audiosGrupo[id] = (llamarFn || llamar)('obtener_audio_grupo', { id: id }).then(function (r) {
+      const bin = atob(r.base64), bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return URL.createObjectURL(new Blob([bytes], { type: r.tipo || 'audio/mpeg' }));
+    }).catch(function (e) { delete _audiosGrupo[id]; throw e; });
+  }
+  return _audiosGrupo[id];
+}
+
+/** Elemento de audio listo para insertar: botón «Reproducir» que descarga el audio y lo toca. */
+function crearReproductorGrupo(id, llamarFn) {
+  const caja = document.createElement('div'); caja.className = 'gr-player';
+  const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'gr-play'; btn.textContent = '▶ Reproducir audio';
+  const audio = document.createElement('audio'); audio.controls = true; audio.preload = 'auto'; audio.hidden = true; audio.className = 'gr-audio';
+  caja.appendChild(btn); caja.appendChild(audio);
+  // Los audios grabados en el navegador (webm) no traen su duración: se obliga al navegador a calcularla.
+  audio.addEventListener('loadedmetadata', function () {
+    if (audio.duration === Infinity) {
+      audio.currentTime = 1e101;
+      audio.addEventListener('timeupdate', function fix() { audio.removeEventListener('timeupdate', fix); audio.currentTime = 0; });
+    }
+  });
+  btn.onclick = async function () {
+    btn.disabled = true; btn.textContent = 'Cargando audio…';
+    try {
+      audio.src = await urlAudioGrupo(id, llamarFn);
+      btn.hidden = true; audio.hidden = false;
+      audio.play().catch(function () { /* el usuario toca play */ });
+    } catch (e) {
+      btn.disabled = false; btn.textContent = '▶ Reproducir audio';
+      const m = document.createElement('div'); m.className = 'gr-err'; m.textContent = 'No se pudo cargar el audio. Intenta de nuevo.';
+      caja.appendChild(m); setTimeout(function () { m.remove(); }, 4000);
+    }
+  };
+  return caja;
+}

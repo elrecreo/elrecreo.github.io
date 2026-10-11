@@ -158,3 +158,9 @@ button.btn.gr-grabar.grabando { background: var(--mal); color: #fff; border-colo
 .gr-extracto { margin-top: 6px; white-space: pre-wrap; font-size: 14px; color: var(--tinta); }
 @keyframes gr-pulso { 50% { opacity: .65; } }
 @media (prefers-reduced-motion: reduce) { button.btn.gr-grabar.grabando { animation: none; } }
+.gr-player { margin: 8px 0; }
+.gr-play { min-height: 40px; padding: 0 16px; border-radius: 20px; border: 0; background: var(--gr, var(--azul)); color: #fff; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.gr-play:disabled { opacity: .7; }
+.gr-err { margin-top: 6px; font-size: 13px; color: var(--mal); }
+.gr-slot-audio:empty { display: none; }
+.gr-lider { margin: 0 0 4px; padding: 8px 12px; background: var(--suave); border-radius: 8px; font-size: 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }

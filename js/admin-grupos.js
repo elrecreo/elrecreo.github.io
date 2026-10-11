@@ -69,8 +69,9 @@
       '<div class="editando" id="gEditando" hidden><span>Editando una publicación</span><button class="btn sec chico" id="gCancelar">Cancelar</button></div>' +
       '<div class="gr-modos" role="tablist" aria-label="Tipo de publicación">' +
       ['texto', 'imagen', 'audio'].map(function (t) { return '<button type="button" class="gr-modo" data-modo="' + t + '" role="tab">' + ETIQUETA_TIPO[t] + '</button>'; }).join('') + '</div>' +
-      '<label for="gTit">Título (opcional)</label><input type="text" id="gTit" maxlength="120" autocomplete="off" placeholder="Ej.: La fe que mueve montañas">' +
-      '<div id="gModoTexto"><label for="gTexto" id="gTextoEt">Texto</label><textarea id="gTexto" rows="8" placeholder="Escribe aquí el devocional…"></textarea></div>' +
+      '<div id="gLiderCaja"></div>' +
+      '<label for="gTit">Título (opcional)</label><input type="text" id="gTit" maxlength="120" autocomplete="off">' +
+      '<div id="gModoTexto"><label for="gTexto" id="gTextoEt">Texto</label><textarea id="gTexto" rows="8"></textarea></div>' +
       '<div id="gModoImagen" hidden><label for="gImg">Imagen</label><input type="file" id="gImg" accept="image/*"><img id="gImgVista" class="gr-vista" alt="" hidden></div>' +
       '<div id="gModoAudio" hidden><label>Audio</label>' +
       '<div class="gr-rec"><button type="button" class="btn gr-grabar" id="gRec">● Grabar</button><span class="gr-tiempo" id="gTiempo" aria-live="off">0:00</span></div>' +
@@ -84,6 +85,21 @@
     raiz.style.setProperty('--gr', info.color);
 
     const $ = function (id) { return raiz.querySelector('#' + id); };
+    // Nombre del líder: se pide una sola vez y queda guardado en este navegador.
+    const CLAVE_LIDER = 'rc:lider_admin';
+    function liderGuardado() { try { return localStorage.getItem(CLAVE_LIDER) || ''; } catch (e) { return ''; } }
+    function guardarLider(n) { try { localStorage.setItem(CLAVE_LIDER, n); } catch (e) { /* sin almacenamiento: se vuelve a pedir */ } }
+    function olvidarLider() { try { localStorage.removeItem(CLAVE_LIDER); } catch (e) { /* nada */ } }
+    let liderActual = liderGuardado();
+    function pintarLider() {
+      const caja = $('gLiderCaja');
+      if (liderActual) {
+        caja.innerHTML = '<div class="gr-lider">Publicas como <b>' + esc(liderActual) + '</b> <button type="button" class="btn sec chico" id="gCambiarLider">Cambiar</button></div>';
+        $('gCambiarLider').onclick = function () { olvidarLider(); liderActual = ''; pintarLider(); $('gLider').focus(); };
+      } else {
+        caja.innerHTML = '<label for="gLider">Nombre del líder</label><input type="text" id="gLider" maxlength="80" autocomplete="name">';
+      }
+    }
     let modo = 'texto', editId = null, editMediaUrl = '', cache = [];
     let imagenBlob = null, audioBlob = null, audioUrl = null, audioNombre = 'audio.webm';
     let grabador = null, flujo = null, trozos = [], reloj = null, inicioRec = 0, cerrado = false;
@@ -186,7 +202,12 @@
     $('gPub').onclick = async function () {
       if (grabador) { msg($('gMsg'), 'Detén la grabación antes de publicar.', 'mal'); return; }
       const texto = $('gTexto').value.trim(), titulo = $('gTit').value.trim();
-      const datos = { grupo: grupo, tipo: modo, titulo: titulo, texto: texto, activo: true };
+      let lider = liderActual;
+      if (!lider) {
+        lider = ($('gLider') ? $('gLider').value : '').trim();
+        if (!lider) { msg($('gMsg'), 'Escribe el nombre del líder.', 'mal'); $('gLider').focus(); return; }
+      }
+      const datos = { grupo: grupo, tipo: modo, titulo: titulo, texto: texto, lider: lider, activo: true };
       if (editId) datos.id = editId;
       try {
         if (modo === 'texto' && !texto) throw new Error('Escribe el texto del devocional.');
@@ -203,6 +224,7 @@
       msg($('gMsg'), datos.archivoBase64 ? 'Subiendo… (un audio largo puede tardar un momento)' : 'Guardando…');
       try {
         await llamar('guardar_devocional_grupo', datos);
+        if (!liderActual) { liderActual = lider; guardarLider(lider); pintarLider(); }
         const edit = !!editId;
         limpiarFormulario();
         msg($('gMsg'), edit ? 'Cambios guardados' : 'Publicado', 'ok');
@@ -216,10 +238,10 @@
       const t = d.titulo ? '<b>' + esc(d.titulo) + '</b> ' : '';
       let cuerpo = '';
       if (d.tipo === 'texto') cuerpo = '<div class="gr-extracto">' + esc(d.texto.length > 220 ? d.texto.slice(0, 220) + '…' : d.texto) + '</div>';
-      else if (d.tipo === 'audio') cuerpo = '<audio class="gr-audio" controls preload="none" src="' + esc(d.mediaUrl) + '"></audio>' + (d.texto ? '<div class="gr-extracto">' + esc(d.texto) + '</div>' : '');
+      else if (d.tipo === 'audio') cuerpo = '<div class="gr-slot-audio" data-id="' + esc(d.id) + '"></div>' + (d.texto ? '<div class="gr-extracto">' + esc(d.texto) + '</div>' : '');
       else cuerpo = (d.texto ? '<div class="gr-extracto">' + esc(d.texto) + '</div>' : '');
       return t + '<span class="marca-estado' + (d.activo ? '' : ' off') + '">' + ETIQUETA_TIPO[d.tipo] + (d.activo ? '' : ' · oculto') + '</span>' +
-        '<div class="sub">' + esc(d.fecha) + '</div>' + cuerpo;
+        '<div class="sub">' + (d.lider ? esc(d.lider) + ' · ' : '') + esc(d.fecha) + '</div>' + cuerpo;
     }
     async function cargarLista() {
       const lista = $('gLista');
@@ -234,6 +256,7 @@
             '<button class="btn sec chico" data-t="' + esc(d.id) + '" data-a="' + d.activo + '">' + (d.activo ? 'Ocultar' : 'Mostrar') + '</button>' +
             '<button class="btn mal chico" data-d="' + esc(d.id) + '">Borrar</button></div></li>';
         }).join('') : '<li class="vacio">Aún no hay publicaciones.</li>';
+        lista.querySelectorAll('.gr-slot-audio').forEach(function (sl) { sl.appendChild(crearReproductorGrupo(sl.dataset.id)); });
         lista.querySelectorAll('.mini-slot').forEach(function (sl) { cargarMiniatura(sl, urlsMiniatura(cache[sl.dataset.i].mediaUrl, 320)); });
         lista.querySelectorAll('[data-e]').forEach(function (b) {
           b.onclick = function () {
@@ -262,6 +285,7 @@
       } catch (e) { lista.innerHTML = '<li class="vacio estado mal">' + esc(e.message) + '</li>'; }
     }
 
+    pintarLider();
     pintarModo();
     cargarLista();
 

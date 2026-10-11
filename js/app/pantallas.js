@@ -16,10 +16,13 @@
     let guardado = RC.leer('dev', null);   // { version, url }
     let blobListo = null, blobDe = null, fab = null, fabGrupos = null;
 
-    // Dos accesos sin nombre: Hombres y Damas (siempre visibles, aunque aún no haya imagen del día)
-    fabGrupos = h('div', { class: 'rc-dev-grupos' },
-      h('button', { class: 'hombres', 'aria-label': 'Hombre de valor', title: 'Hombre de valor', html: RC.ico('hombre'), onclick: function () { location.hash = '#/devocional/hombres'; } }),
-      h('button', { class: 'damas', 'aria-label': 'Devocional de mujer a mujer', title: 'Devocional de mujer a mujer', html: RC.ico('mujer'), onclick: function () { location.hash = '#/devocional/damas'; } }));
+    // Un solo botón «Líderes»: al tocarlo se despliegan «De mujer a mujer» y «Hombre de valor»
+    const menuLideres = h('div', { class: 'menu', hidden: '' },
+      h('button', { class: 'damas', html: RC.ico('mujer') + '<span>De mujer a mujer</span>', onclick: function () { location.hash = '#/devocional/damas'; } }),
+      h('button', { class: 'hombres', html: RC.ico('hombre') + '<span>Hombre de valor</span>', onclick: function () { location.hash = '#/devocional/hombres'; } }));
+    const btnLideres = h('button', { class: 'principal', 'aria-label': 'Líderes', 'aria-expanded': 'false', html: RC.ico('lideres'),
+      onclick: function () { const abierto = fabGrupos.classList.toggle('abierto'); menuLideres.hidden = !abierto; btnLideres.setAttribute('aria-expanded', String(abierto)); } });
+    fabGrupos = h('div', { class: 'rc-dev-grupos' }, menuLideres, btnLideres, h('span', { class: 'hint', text: 'Líderes' }));
     document.getElementById('recreo').appendChild(fabGrupos);
 
     function pintar(d, animar) {
@@ -108,10 +111,10 @@
         RC.imagen(img, RC.urlsDrive(d.mediaUrl, 1200), function () { fl.style.minHeight = '0'; }, function () { fl.remove(); });
         el.appendChild(fl);
       } else if (d.tipo === 'audio') {
-        el.appendChild(h('audio', { controls: '', preload: 'none', src: d.mediaUrl }));
+        el.appendChild(crearReproductorGrupo(d.id, RC.api));
       }
       if (d.texto) el.appendChild(h('p', { class: 'tx', text: d.texto }));
-      if (d.fecha) el.appendChild(h('div', { class: 'fe', text: d.fecha }));
+      if (d.lider || d.fecha) el.appendChild(h('div', { class: 'fe', text: (d.lider ? 'Por ' + d.lider + ' · ' : '') + (d.fecha || '') }));
       return el;
     }
     function pintar() {
